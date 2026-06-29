@@ -1,0 +1,36 @@
+:root {
+  /* 1. 色彩系统 (Color Palette) */
+  --color-bg-app: #0B1120;       /* App最底层背景 */
+  --color-bg-card: #151E32;      /* 卡片/模块背景 */
+  --color-bg-elevated: #1E293B;  /* 弹窗/浮层背景 */
+
+  --color-primary: #3B82F6;      /* 主品牌色(信任蓝)，用于主按钮、高亮Tab */
+  --color-success: #10B981;      /* 收益/成功/到账(翡翠绿) */
+  --color-warning: #F59E0B;      /* 风险提示/待处理(琥珀黄) */
+  --color-danger: #EF4444;       /* 错误/亏损/高风险(珊瑚红) */
+
+  --color-text-main: #FFFFFF;    /* 主标题/核心金额 */
+  --color-text-sub: #94A3B8;     /* 辅助说明/标签文字 */
+  --color-border: rgba(255, 255, 255, 0.08); /* 分割线/卡片边框 */
+
+  /* 2. 排版系统 (Typography) */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-mono: 'IBM Plex Mono', monospace; /* 专用于金额/地址，确保等宽对齐 */
+
+  --text-xs: 12px;   /* 辅助标签 */
+  --text-sm: 14px;   /* 正文/列表项 */
+  --text-md: 16px;   /* 模块标题 */
+  --text-lg: 20px;   /* 页面大标题 */
+  --text-xl: 28px;   /* 核心资产金额 */
+
+  /* 3. 间距与圆角 (Spacing & Radius) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;  /* 页面标准内边距 */
+  --space-lg: 24px;  /* 模块间垂直间距 */
+
+  --radius-sm: 8px;  /* 小标签/输入框 */
+  --radius-md: 12px; /* 常规卡片 */
+  --radius-lg: 16px; /* 大模块/弹窗 */
+  --radius-full: 999px; /* 胶囊按钮 */
+}

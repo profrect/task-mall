@@ -1,0 +1,15 @@
+export default {
+  'menu.system-router-config': 'Menu Router Config',
+  'system-router-config.form.search': 'Search',
+  'system-router-config.form.reset': 'Reset',
+  'system-router-config.form.add': 'Add',
+  'system-router-config.columns.locale': 'menu name key',
+  'system-router-config.columns.type': 'menu type',
+  'system-router-config.columns.name': 'route name',
+  'system-router-config.columns.path': 'route path',
+  'system-router-config.columns.uri': 'request route uri',
+  'system-router-config.columns.component': 'component path',
+  'system-router-config.columns.order': 'order',
+  'system-router-config.columns.hideInMenu': 'status',
+  'system-router-config.columns.operations': 'operations',
+};

@@ -1,0 +1,98 @@
+// 自定义样式
+:root {
+    --color_red: #F56C6C;
+    --color_red2: #fab6b6;
+
+    --color_green: #67C23A;
+    --color_green2: #42b983;
+
+    --color_yellow: #E6A23C;
+
+    --color_blue: #409eff;
+    --color_blue2: #d9ecff;
+    --color_blue3: #ECF5FF;
+
+    --color_gray: #73767A;
+    --color_gray2: #dcdfe6;
+    --color_gray3: #ccc;
+    --color_gray4: #f2f3f5;
+
+    --color_white: #FFFFFF;
+
+    --color_black: #1D2129;
+    --color_black2: #001528;
+    --color_black3: #304156;
+    --color_black4: #606266;
+
+    // 字体大小
+    --font_size_small: 12px;
+    --font_size_base: 14px;
+    --font_size_title: 16px;
+
+    --custom_font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+
+    // 页面滚动部分高度
+    --page_main_scrollbar_height: calc(100vh - 74px);
+
+    // 常用字体颜色
+    .blue_font, .blue_font .el-input__inner {
+        color: var(--color_blue) !important;
+    }
+
+    .green_font, .green_font .el-input__inner{
+        color: var(--color_green) !important;
+    }
+
+    .black_font, .black_font .el-input__inner {
+        color: var(--color_black) !important;
+    }
+
+    .golden_font, .golden_font .el-input__inner {
+        color: var(--color_yellow) !important;
+    }
+
+    .red_font, .red_font .el-input__inner {
+        color: var(--color_red) !important;
+    }
+}
+
+.container_all {
+    padding: 0 20px 20px 20px;
+}
+
+.text-ellipsis {
+    overflow: hidden; /* 隐藏超出的内容 */
+    white-space: nowrap; /* 防止文本换行 */
+    text-overflow: ellipsis; /* 使用省略号表示超出的文本 */
+    cursor: pointer;
+}
+
+.pagination_style {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.long_text_style {
+    white-space: pre-wrap;
+    line-height: 22px;
+    padding: 10px 20px;
+    font-size: var(--font_size_small);
+    border: 1px solid var(--color_gray2);
+    border-radius: 5px;
+}
+
+/** 搜索框统一样式 */
+.search_input {
+    display: flex;
+    .arco-input-wrapper, .arco-select-view-single {
+        margin-right: 10px;
+        margin-bottom: 5px;
+        width: 11vw;
+    }
+}
+
+/** div是否被选中 */
+.is_active {
+    color: var(--color_blue);
+}

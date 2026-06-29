@@ -1,0 +1,2 @@
+-- liquibase formatted sql
+-- changeset GM:wallet_init_data_20260629001

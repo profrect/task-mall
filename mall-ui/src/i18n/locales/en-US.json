@@ -1,0 +1,16 @@
+{
+  "home": {
+    "featuredTasks": "Featured Tasks",
+    "hotTag": "Hot",
+    "doTask": "Start Now",
+    "noDesc": "No description available",
+    "taskMallIntroTitle": "Do Tasks · Earn Rewards",
+    "taskMallIntro": "Daily curated tasks – complete to claim cash/points,Daily curated tasks – complete to claim cash/points,Daily curated tasks – complete to claim cash/points",
+    "completedTasks": "{count} tasks completed",
+    "goToTaskMall": "Go to Task Mall",
+    "announcement": "Announcement"
+  },
+  "common": {
+    "confirm": "Confirm"
+  }
+}

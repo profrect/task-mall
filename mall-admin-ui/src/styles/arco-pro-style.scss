@@ -1,0 +1,40 @@
+/*覆盖arco-design-vue input 样式**/
+.disabled-style {
+  input, textarea {
+    -webkit-text-fill-color: rgb(83 72 72) !important;
+  }
+  /* 选择类下所有子元素span */
+  > span {
+    -webkit-text-fill-color: rgb(83 72 72) !important;
+  }
+}
+
+/* 时间选择器内容居中 */
+.arco-picker-range .arco-picker-input input::placeholder {
+  text-align: center;
+}
+
+/* 数字输入框内容居中 */
+.arco-input-outer .arco-input {
+  text-align: center;
+}
+
+/* 自定义全局滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+
+  &:hover {
+    background: #a8a8a8;
+  }
+}
+
+/* 选择框的下拉框宽度随内容变化 */
+.arco-select-dropdown {
+  min-width: 11vw;
+  width: fit-content;
+}

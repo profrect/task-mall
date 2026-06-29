@@ -1,0 +1,16 @@
+export default {
+  'menu.sys-permission':'系统权限',
+  'menu.system-router-config': '菜单路由配置',
+  'system-router-config.form.search': '查询',
+  'system-router-config.form.reset': '重置',
+  'system-router-config.form.add': '添加',
+  'system-router-config.columns.menuKey': '菜单名称',
+  'system-router-config.columns.type': '菜单类型',
+  'system-router-config.columns.name': '路由名称',
+  'system-router-config.columns.path': '路由路径',
+  'system-router-config.columns.uri': '接口请求路径uri',
+  'system-router-config.columns.component': '组件路径',
+  'system-router-config.columns.order': '顺序',
+  'system-router-config.columns.hideInMenu': '状态',
+  'system-router-config.columns.operations': '操作',
+};

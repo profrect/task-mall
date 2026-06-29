@@ -1,0 +1,16 @@
+{
+  "home": {
+    "featuredTasks": "精选任务",
+    "hotTag": "热门",
+    "doTask": "立即参与",
+    "noDesc": "暂无任务说明",
+    "taskMallIntroTitle": "做任务 · 赚奖励",
+    "taskMallIntro": "每日更新精选任务，完成即可领取现金/积分奖励,每日更新精选任务，完成即可领取现金/积分奖励,每日更新精选任务，完成即可领取现金/积分奖励.",
+    "completedTasks": "已完成 {count} 个任务",
+    "goToTaskMall": "前往任务商城",
+    "announcement": "公告"
+  },
+  "common": {
+    "confirm": "确认"
+  }
+}

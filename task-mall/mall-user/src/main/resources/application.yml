@@ -1,0 +1,9 @@
+server:
+  port: 10001
+spring:
+  application:
+    name: mall-user
+  config:
+    import:
+      - classpath:application-biz.yml
+      - classpath:application-db.yml

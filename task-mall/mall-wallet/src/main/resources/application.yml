@@ -1,0 +1,9 @@
+server:
+  port: 10002
+spring:
+  config:
+    import:
+      - classpath:application-biz.yml
+      - classpath:application-db.yml
+  application:
+    name: mall-wallet

@@ -17,7 +17,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "com.mall.wallet.chain.mapper",
         "com.mall.wallet.recharge.mapper",
         "com.mall.wallet.withdraw.mapper",
-        "com.mall.wallet.collect.mapper"
+        "com.mall.wallet.collect.mapper",
+        "com.mall.wallet.transfer.mapper",
+        "com.mall.wallet.payment.mapper"
 })
 public class WalletApplication {
 

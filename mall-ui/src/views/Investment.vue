@@ -1,63 +1,43 @@
 <template>
   <div class="invest-page">
     <van-nav-bar title="投资" left-arrow fixed placeholder @click-left="$router.back()" />
-    <!-- 顶部五维数据总览 (可用余额 + 4项统计) -->
     <div class="asset-card">
       <div class="balance-section">
-        <span class="balance-label">Available Balance</span>
-        <span class="balance-value">{{ stats.availableBalance }}</span>
+        <span class="balance-label">Task Center Projects</span>
+        <span class="balance-value">{{ projects.length }}</span>
       </div>
-
-      <div class="stats-row">
-        <div class="stat-item">
-          <span class="stat-val">{{ stats.currentProjects }}</span>
-          <span class="stat-label">Current</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-val">{{ stats.completedProjects }}</span>
-          <span class="stat-label">Completed</span>
-        </div>
-        <div class="stat-item highlight">
-          <span class="stat-val">{{ stats.totalProfit }}</span>
-          <span class="stat-label">Total Profit</span>
-        </div>
-        <!-- 新增：昨日收益 -->
-        <div class="stat-item yesterday">
-          <span class="stat-val">{{ stats.yesterdayProfit }}</span>
-          <span class="stat-label">Yesterday</span>
-        </div>
+      <div class="boundary-text">
+        当前投资项目仅作为任务中心商品/计划展示口径，不产生独立投资扣款、派息、分红或到期结算。
       </div>
     </div>
 
-    <!-- Tabs 分类列表 (保持不变) -->
     <van-tabs v-model:active="activeTab" sticky offset-top="46" shrink>
       <van-tab title="Available" name="available">
-        <InvestList status="available" />
-      </van-tab>
-      <van-tab title="In Progress" name="in_progress">
-        <InvestList status="in_progress" />
-      </van-tab>
-      <van-tab title="History" name="history">
-        <InvestList status="history" />
+        <InvestList :projects="projects" :loading="loading" @refresh="loadProjects" />
       </van-tab>
     </van-tabs>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import InvestList from '@/components/invest/InvestList.vue'
+import { onMounted, ref } from 'vue';
+import InvestList from '@/components/invest/InvestList.vue';
+import { MissionInvestProject, getInvestProjects } from '@/api/mission';
 
-const activeTab = ref('available')
+const activeTab = ref('available');
+const projects = ref<MissionInvestProject[]>([]);
+const loading = ref(false);
 
-// TODO: 替换为 /api/invest/stats 接口
-const stats = ref({
-  availableBalance: '450.00',
-  currentProjects: 3,
-  completedProjects: 28,
-  totalProfit: '125.50',
-  yesterdayProfit: '8.20', // 新增昨日收益字段
-})
+const loadProjects = async () => {
+  loading.value = true;
+  try {
+    projects.value = await getInvestProjects(50);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(loadProjects);
 </script>
 
 <style scoped>
@@ -75,7 +55,7 @@ const stats = ref({
 }
 
 .balance-section {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 .balance-label {
   display: block;
@@ -90,44 +70,14 @@ const stats = ref({
   letter-spacing: -0.5px;
 }
 
-.stats-row {
-  display: flex;
-  padding-top: 16px;
+.boundary-text {
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.86;
 }
 
-/* 改为等宽分布，防止4项数据在小屏下挤压 */
-.stat-item {
-  text-align: center;
-  flex: 1;
-  min-width: 0; /* 允许文本截断，防止撑破布局 */
-}
-
-.stat-val {
-  display: block;
-  font-size: 16px; /* 4项数据时适当缩小字号 */
-  font-weight: 700;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.stat-label {
-  display: block;
-  font-size: 10px;
-  opacity: 0.7;
-  margin-top: 4px;
-}
-
-.stat-item.highlight .stat-val {
-  color: #ffab00;
-}
-.stat-item.yesterday .stat-val {
-  color: #4caf50;
-} /* 昨日收益使用绿色区分 */
-
-/* Tabs 样式微调 */
 :deep(.van-tabs__nav) {
   background: transparent;
   margin: 0 12px;

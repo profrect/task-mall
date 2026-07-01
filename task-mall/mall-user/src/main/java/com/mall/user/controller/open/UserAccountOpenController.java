@@ -1,5 +1,6 @@
 package com.mall.user.controller.open;
 
+import com.mall.common.core.exception.BizException;
 import com.mall.common.core.result.Result;
 import com.mall.user.model.dto.UserChangePwdDTO;
 import com.mall.user.model.dto.UserLoginDTO;
@@ -18,18 +19,18 @@ public class UserAccountOpenController {
     private UserAccountService userAccountService;
 
     @PostMapping("/register")
-    public Result<Void> userRegister(@RequestBody @Validated UserRegisterDTO registerDTO){
+    public Result<Void> userRegister(@RequestBody @Validated UserRegisterDTO registerDTO) throws BizException {
         userAccountService.userRegister(registerDTO);
         return Result.ok();
     }
 
     @PostMapping("/login")
-    public Result<UserLoginVO> userLogin(UserLoginDTO loginDTO){
+    public Result<UserLoginVO> userLogin(@RequestBody @Validated UserLoginDTO loginDTO) throws BizException {
         return Result.ok(userAccountService.login(loginDTO));
     }
 
     @PutMapping("/change-pwd")
-    public Result<Void> passwordChange(UserChangePwdDTO changePwdDTO){
+    public Result<Void> passwordChange(@RequestBody @Validated UserChangePwdDTO changePwdDTO) throws BizException {
         userAccountService.passwordChange(changePwdDTO);
         return Result.ok();
     }

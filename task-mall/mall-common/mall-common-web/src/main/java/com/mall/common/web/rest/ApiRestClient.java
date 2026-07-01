@@ -39,6 +39,17 @@ public class ApiRestClient {
         return convert(result.data(), clazz);
     }
 
+    public <T> T post(String url, Object body, TypeReference<T> typeRef) throws BizException {
+        RawResult result = restClient.post()
+                .uri(url)
+                .body(body)
+                .retrieve()
+                .body(RawResult.class);
+
+        check(result);
+        return objectMapper.convertValue(result.data(), typeRef);
+    }
+
     public <T> T get(String url, TypeReference<T> typeRef, Object... uriVars) throws BizException {
         RawResult result = restClient.get()
                 .uri(url, uriVars)

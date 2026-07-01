@@ -1,3 +1,136 @@
 sa-token:
   token-name: Authorization
   token-prefix: Bearer
+
+wallet:
+  security:
+    # AES 主密钥(base64, 16/24/32 字节)。生产环境务必用环境变量覆盖；下面默认值仅供本地开发联调。
+    master-key: ${WALLET_SECURITY_MASTER_KEY:ZGV2LW9ubHktbWFsbC13YWxsZXQtc2VjcmV0LTMyISE=}
+  tron:
+    endpoint: ${WALLET_TRON_ENDPOINT:https://api.trongrid.io}
+    # TronGrid API Key 走环境变量，不入库不进 git；留空则按免密限流访问
+    api-key: ${WALLET_TRON_API_KEY:}
+    usdt-contract: ${WALLET_TRON_USDT_CONTRACT:TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t}
+    min-confirmations: ${WALLET_TRON_MIN_CONFIRMATIONS:19}
+    scan-limit: ${WALLET_TRON_SCAN_LIMIT:50}
+    # 出款 gRPC 节点：留空走 trident 内置主网；自建/私链时配置
+    grpc-endpoint: ${WALLET_TRON_GRPC_ENDPOINT:}
+    grpc-endpoint-solidity: ${WALLET_TRON_GRPC_SOLIDITY:}
+    # TRC20 转账 feeLimit(sun)，默认 100 TRX
+    fee-limit: ${WALLET_TRON_FEE_LIMIT:100000000}
+  # EVM 多链（ETH/BSC/Polygon）：rpc-url 走环境变量不入库；chain-id 用于 EIP-155 防重放签名；
+  # gas-limit 默认 10 万（ERC-20 transfer 足够）；未配 gas-price 则用节点 eth_gasPrice 实时报价；
+  # scan-lookback-blocks = 充值扫块回看窗口，须 >= 确认窗口+扫描间隔(ETH~50/BSC~100/Polygon~300)。
+  # 充值扫块逻辑已落地，但 chain_config.enabled 默认 0：须先配好 rpc-url，再把对应链 enabled 置 1，
+  # 才会开始扫块并允许发放收款地址（避免发出无人入账的地址导致丢币）。
+  evm:
+    chains:
+      ETH:
+        rpc-url: ${WALLET_EVM_ETH_RPC_URL:}
+        chain-id: ${WALLET_EVM_ETH_CHAIN_ID:1}
+        gas-limit: ${WALLET_EVM_ETH_GAS_LIMIT:100000}
+        scan-lookback-blocks: ${WALLET_EVM_ETH_SCAN_LOOKBACK:50}
+      BSC:
+        rpc-url: ${WALLET_EVM_BSC_RPC_URL:}
+        chain-id: ${WALLET_EVM_BSC_CHAIN_ID:56}
+        gas-limit: ${WALLET_EVM_BSC_GAS_LIMIT:100000}
+        scan-lookback-blocks: ${WALLET_EVM_BSC_SCAN_LOOKBACK:100}
+      POLYGON:
+        rpc-url: ${WALLET_EVM_POLYGON_RPC_URL:}
+        chain-id: ${WALLET_EVM_POLYGON_CHAIN_ID:137}
+        gas-limit: ${WALLET_EVM_POLYGON_GAS_LIMIT:100000}
+        scan-lookback-blocks: ${WALLET_EVM_POLYGON_SCAN_LOOKBACK:300}
+  hotwallet:
+    chains:
+      TRON:
+        address: ${WALLET_HOTWALLET_TRON_ADDRESS:}
+        # 出款私钥密文 base64(iv‖ciphertext+tag)，用同一 master-key 由 SecretCipher 离线加密；严禁放明文私钥
+        private-key-cipher: ${WALLET_HOTWALLET_TRON_PK_CIPHER:}
+      ETH:
+        address: ${WALLET_HOTWALLET_ETH_ADDRESS:}
+        private-key-cipher: ${WALLET_HOTWALLET_ETH_PK_CIPHER:}
+      BSC:
+        address: ${WALLET_HOTWALLET_BSC_ADDRESS:}
+        private-key-cipher: ${WALLET_HOTWALLET_BSC_PK_CIPHER:}
+      POLYGON:
+        address: ${WALLET_HOTWALLET_POLYGON_ADDRESS:}
+        private-key-cipher: ${WALLET_HOTWALLET_POLYGON_PK_CIPHER:}
+  withdraw:
+    enabled: ${WALLET_WITHDRAW_ENABLED:true}
+    chains:
+      TRON:
+        enabled: ${WALLET_WITHDRAW_TRON_ENABLED:true}
+        min-amount: ${WALLET_WITHDRAW_TRON_MIN_AMOUNT:10}
+        fee: ${WALLET_WITHDRAW_TRON_FEE:1}
+        min-confirmations: ${WALLET_WITHDRAW_TRON_MIN_CONFIRMATIONS:19}
+      # EVM 链默认关闭提现：须先配置 rpc-url + 热钱包(address/private-key-cipher)，再用 *_ENABLED=true 显式开启
+      ETH:
+        enabled: ${WALLET_WITHDRAW_ETH_ENABLED:false}
+        min-amount: ${WALLET_WITHDRAW_ETH_MIN_AMOUNT:20}
+        fee: ${WALLET_WITHDRAW_ETH_FEE:5}
+        min-confirmations: ${WALLET_WITHDRAW_ETH_MIN_CONFIRMATIONS:12}
+      BSC:
+        enabled: ${WALLET_WITHDRAW_BSC_ENABLED:false}
+        min-amount: ${WALLET_WITHDRAW_BSC_MIN_AMOUNT:10}
+        fee: ${WALLET_WITHDRAW_BSC_FEE:1}
+        min-confirmations: ${WALLET_WITHDRAW_BSC_MIN_CONFIRMATIONS:15}
+      POLYGON:
+        enabled: ${WALLET_WITHDRAW_POLYGON_ENABLED:false}
+        min-amount: ${WALLET_WITHDRAW_POLYGON_MIN_AMOUNT:10}
+        fee: ${WALLET_WITHDRAW_POLYGON_FEE:1}
+        min-confirmations: ${WALLET_WITHDRAW_POLYGON_MIN_CONFIRMATIONS:128}
+  # gas 供给钱包（每链一个）：归集前给无原生币的用户充值地址代付一点原生币，使其能自付代币转账手续费。
+  # 私钥密文 base64(iv‖ciphertext+tag) 用同一 master-key 由 SecretCipher 离线加密；严禁放明文私钥。
+  # 未配某链 address/private-key-cipher 则该链无法归集（ensureGas 报 GAS_STATION_NOT_CONFIGURED）。
+  # fund-amount=每次代付的原生币数量(人类可读)；min-native=地址原生币低于此值才代付(避免对已有 gas 的地址重复喂)。
+  gas-station:
+    chains:
+      TRON:
+        address: ${WALLET_GAS_TRON_ADDRESS:}
+        private-key-cipher: ${WALLET_GAS_TRON_PK_CIPHER:}
+        fund-amount: ${WALLET_GAS_TRON_FUND_AMOUNT:30}
+        min-native: ${WALLET_GAS_TRON_MIN_NATIVE:15}
+      ETH:
+        address: ${WALLET_GAS_ETH_ADDRESS:}
+        private-key-cipher: ${WALLET_GAS_ETH_PK_CIPHER:}
+        fund-amount: ${WALLET_GAS_ETH_FUND_AMOUNT:0.003}
+        min-native: ${WALLET_GAS_ETH_MIN_NATIVE:0.0015}
+      BSC:
+        address: ${WALLET_GAS_BSC_ADDRESS:}
+        private-key-cipher: ${WALLET_GAS_BSC_PK_CIPHER:}
+        fund-amount: ${WALLET_GAS_BSC_FUND_AMOUNT:0.001}
+        min-native: ${WALLET_GAS_BSC_MIN_NATIVE:0.0005}
+      POLYGON:
+        address: ${WALLET_GAS_POLYGON_ADDRESS:}
+        private-key-cipher: ${WALLET_GAS_POLYGON_PK_CIPHER:}
+        fund-amount: ${WALLET_GAS_POLYGON_FUND_AMOUNT:0.1}
+        min-native: ${WALLET_GAS_POLYGON_MIN_NATIVE:0.05}
+  # 归集：把分散在用户充值地址上的 USDT 集中到出款热钱包，便于统一出款与对账。
+  # enabled=定时归集总开关，默认 false（仅手工接口触发，定时任务空转）；须先配好 gas-station + hotwallet 再开启。
+  # 每链 enabled=二级开关(受总开关约束，EVM 默认关需显式开)；min-amount=余额高于此值才归集(避免小额归集 gas 不划算)；
+  # min-confirmations=gas/归集交易确认达标阈值。scan-interval-ms/scan-initial-delay-ms 供定时任务(仅 enabled=true 生效)。
+  collect:
+    enabled: ${WALLET_COLLECT_ENABLED:false}
+    scan-interval-ms: ${WALLET_COLLECT_SCAN_INTERVAL_MS:120000}
+    scan-initial-delay-ms: ${WALLET_COLLECT_SCAN_INITIAL_DELAY_MS:60000}
+    chains:
+      TRON:
+        enabled: ${WALLET_COLLECT_TRON_ENABLED:true}
+        min-amount: ${WALLET_COLLECT_TRON_MIN_AMOUNT:10}
+        min-confirmations: ${WALLET_COLLECT_TRON_MIN_CONFIRMATIONS:19}
+      ETH:
+        enabled: ${WALLET_COLLECT_ETH_ENABLED:false}
+        min-amount: ${WALLET_COLLECT_ETH_MIN_AMOUNT:20}
+        min-confirmations: ${WALLET_COLLECT_ETH_MIN_CONFIRMATIONS:12}
+      BSC:
+        enabled: ${WALLET_COLLECT_BSC_ENABLED:false}
+        min-amount: ${WALLET_COLLECT_BSC_MIN_AMOUNT:10}
+        min-confirmations: ${WALLET_COLLECT_BSC_MIN_CONFIRMATIONS:15}
+      POLYGON:
+        enabled: ${WALLET_COLLECT_POLYGON_ENABLED:false}
+        min-amount: ${WALLET_COLLECT_POLYGON_MIN_AMOUNT:10}
+        min-confirmations: ${WALLET_COLLECT_POLYGON_MIN_CONFIRMATIONS:128}
+
+mall:
+  service:
+    user-base-url: ${MALL_SERVICE_USER_BASE_URL:http://127.0.0.1:10001}

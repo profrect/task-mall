@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class UserResp {
 
+    private Long userId;
+
     private String userName;
 
     private Integer vipLevel;
@@ -15,5 +17,5 @@ public class UserResp {
 
     private String parentUserName;
 
-    private String registerTime;
+    private Long registerTime;
 }

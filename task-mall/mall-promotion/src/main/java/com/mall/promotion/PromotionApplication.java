@@ -1,6 +1,7 @@
 package com.mall.promotion;
 
 import lombok.extern.slf4j.Slf4j;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "com.mall.promotion",
         "com.mall.common"
 })
+@MapperScan(basePackages = {"com.mall.promotion.mapper"})
 public class PromotionApplication {
 
     public static void main(String[] args) {

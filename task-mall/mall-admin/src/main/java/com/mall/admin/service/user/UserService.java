@@ -8,4 +8,6 @@ import com.mybatisflex.core.paginate.Page;
 public interface UserService {
 
     Page<UserInfoVO> userPage(UserInfoDTO dto) throws BizException;
+
+    void updateStatus(Long userId, Integer status) throws BizException;
 }

@@ -1,55 +1,62 @@
 package com.mall.user.controller.open;
 
+import com.mall.common.auth.util.AuthUtils;
+import com.mall.common.core.exception.BizException;
 import com.mall.common.core.result.Result;
 import com.mall.user.model.dto.UserInfoDTO;
 import com.mall.user.model.dto.VipLevelUpDTO;
 import com.mall.user.model.vo.UserDetailVO;
-import com.mall.user.model.vo.VipLevelConfigVO;
+import com.mall.user.model.vo.VipLevelOverviewVO;
+import com.mall.user.model.vo.VipUpgradeOrderVO;
+import com.mall.user.service.UserInfoService;
+import com.mall.user.service.VipService;
+import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
+/**
+ * 用户资料接口。所有"本人"动作的 userId 一律由 sa-token 解析（{@link AuthUtils#currentUserId()}），不接受前端传入。
+ */
 @RestController
 @RequestMapping("/api/open/user/")
 public class UserInfoOpenController {
 
+    @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
+    private VipService vipService;
+
     /**
-     * 用户详细信息（根据sa-token解析出用户信息，进行查询）
-     * @return Result
+     * 当前登录用户详情（账号 / 昵称 / VIP / 邀请码 / 邀请人 / 直属团队人数）。
      */
     @GetMapping("/detail")
-    public Result<UserDetailVO> currentUser(){
-        // todo
-        return Result.ok();
+    public Result<UserDetailVO> currentUser() throws BizException {
+        return Result.ok(userInfoService.currentUserDetail(AuthUtils.currentUserId()));
     }
 
     /**
-     * 修改用户信息
-     * @return Result
+     * 修改本人资料（仅昵称 / 邮箱）。目标用户取自会话，DTO 不含 userId。
      */
     @PutMapping("/update")
-    public Result<Void> updateUserInfo(UserInfoDTO userInfoDTO){
+    public Result<Void> updateUserInfo(@RequestBody @Validated UserInfoDTO userInfoDTO) throws BizException {
+        userInfoService.updateUserInfo(AuthUtils.currentUserId(), userInfoDTO);
         return Result.ok();
     }
 
     /**
-     * 查询VIP 等级及其奖励等参数（需要远程调用管理中心）
-     * @return Result
+     * 查询当前用户 VIP 状态与已启用等级配置。
      */
     @GetMapping("/vip-level")
-    public Result<List<VipLevelConfigVO>> vipLevelList(){
-        // todo
-        return Result.ok();
+    public Result<VipLevelOverviewVO> vipLevelList() throws BizException {
+        return Result.ok(vipService.userOverview(AuthUtils.currentUserId()));
     }
 
     /**
-     * 用户提升vip等级
-     * @return Result
+     * 用户提升 VIP 等级：建单 → 钱包扣款 → 更新用户等级。
      */
     @PostMapping("/vip-level-up")
-    public Result<Void> vipLevelUp(@RequestBody @Validated VipLevelUpDTO levelUpDTO){
-        // todo 先检查用户信息，然后再看用户需要提升到哪个等级，从该等级中获取需要的金额。先去钱包中心扣款，然后再修改数据库中的VIP等级数据
-        return Result.ok();
+    public Result<VipUpgradeOrderVO> vipLevelUp(@RequestBody @Validated VipLevelUpDTO levelUpDTO) throws BizException {
+        return Result.ok(vipService.upgrade(AuthUtils.currentUserId(), levelUpDTO));
     }
 }

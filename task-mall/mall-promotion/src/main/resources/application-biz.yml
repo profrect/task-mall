@@ -1,3 +1,7 @@
 sa-token:
   token-name: Authorization
   token-prefix: Bearer
+
+mall:
+  service:
+    wallet-base-url: ${MALL_SERVICE_WALLET_BASE_URL:http://127.0.0.1:10002}

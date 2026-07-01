@@ -1,31 +1,22 @@
 <template>
   <van-cell class="task-cell" :border="false">
     <template #icon>
-      <div class="task-icon" :style="{ background: task.iconBg }">
-        <van-icon :name="task.icon" color="#fff" size="18" />
+      <div class="task-icon">
+        <van-icon name="todo-list-o" color="#fff" size="18" />
       </div>
     </template>
 
     <template #title>
       <div class="task-title">{{ task.title }}</div>
-      <div class="task-reward">+{{ task.reward }}</div>
-      <!-- 进行中任务显示进度条 -->
-      <van-progress
-        v-if="task.status === 'in_progress'"
-        :percentage="task.progress || 0"
-        stroke-width="4"
-        color="#2196f3"
-        class="task-progress"
-      />
+      <div class="task-desc" v-if="task.description">{{ task.description }}</div>
+      <div class="task-reward">+{{ moneyText(task.rewardAmount) }} {{ task.currency }}</div>
+      <van-tag v-if="task.userStatus" :type="statusTagType" plain class="status-tag">
+        {{ statusText }}
+      </van-tag>
     </template>
 
     <template #right-icon>
-      <van-button
-        size="small"
-        :type="btnType"
-        :disabled="task.status === 'completed'"
-        @click.stop="emit('action')"
-      >
+      <van-button size="small" :type="btnType" :disabled="btnDisabled" @click.stop="emit('action')">
         {{ btnText }}
       </van-button>
     </template>
@@ -33,33 +24,51 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
+import { MissionTaskItem } from '@/api/mission';
 
 const props = defineProps<{
-  task: {
-    id: number
-    title: string
-    reward: number
-    status: 'available' | 'in_progress' | 'completed'
-    progress?: number
-    icon: string
-    iconBg: string
-  }
-}>()
+  task: MissionTaskItem;
+}>();
 
-defineEmits(['action'])
+const emit = defineEmits<{ action: [] }>();
+
+const statusText = computed(() => {
+  const map: Record<string, string> = {
+    CLAIMED: 'Claimed',
+    SUBMITTED: 'Reviewing',
+    APPROVED: 'Approved',
+    REJECTED: 'Rejected',
+    CANCELLED: 'Cancelled',
+    EXPIRED: 'Expired',
+  };
+  return props.task.userStatus ? map[props.task.userStatus] || props.task.userStatus : '';
+});
+
+const statusTagType = computed(() => {
+  if (props.task.userStatus === 'APPROVED') return 'success';
+  if (props.task.userStatus === 'REJECTED') return 'danger';
+  if (props.task.userStatus === 'SUBMITTED') return 'warning';
+  return 'primary';
+});
 
 const btnText = computed(() => {
-  if (props.task.status === 'completed') return 'Done'
-  if (props.task.status === 'in_progress') return 'Continue'
-  return 'Start'
-})
+  if (!props.task.userStatus) return 'Start';
+  if (props.task.userStatus === 'CLAIMED' || props.task.userStatus === 'REJECTED') return 'Submit';
+  if (props.task.userStatus === 'SUBMITTED') return 'Reviewing';
+  return 'Done';
+});
 
 const btnType = computed(() => {
-  if (props.task.status === 'available') return 'primary'
-  if (props.task.status === 'in_progress') return 'warning'
-  return 'default'
-})
+  if (!props.task.userStatus) return 'primary';
+  if (props.task.userStatus === 'CLAIMED' || props.task.userStatus === 'REJECTED') return 'warning';
+  if (props.task.userStatus === 'APPROVED') return 'success';
+  return 'default';
+});
+
+const btnDisabled = computed(() => ['SUBMITTED', 'APPROVED', 'CANCELLED', 'EXPIRED'].includes(props.task.userStatus || ''));
+
+const moneyText = (value?: number) => Number(value || 0).toFixed(6);
 </script>
 
 <style scoped>
@@ -77,6 +86,7 @@ const btnType = computed(() => {
   justify-content: center;
   margin-right: 12px;
   flex-shrink: 0;
+  background: #1989fa;
 }
 
 .task-title {
@@ -86,14 +96,20 @@ const btnType = computed(() => {
   line-height: 1.4;
 }
 
+.task-desc {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
 .task-reward {
   font-size: 12px;
   color: #ff976a;
   margin-top: 2px;
 }
 
-.task-progress {
+.status-tag {
   margin-top: 6px;
-  width: 120px;
 }
 </style>

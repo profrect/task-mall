@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public record UserRegisterDTO(
         @NotBlank(message = "{params.account.notBlank}")
-        @StrLen(maxLen = 3, message = "{params.account.length.exceeded}")
+        @StrLen(maxLen = 50, message = "{params.account.length.exceeded}")
         String account,
 
         @NotBlank(message = "{params.password.notBlank}")

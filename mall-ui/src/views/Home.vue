@@ -8,11 +8,11 @@
     <!-- 2. 公告弹框（进入首页自动触发） -->
     <van-dialog
       v-model:show="showAnnouncement"
-      :title="$t('home.announcement')"
-      show-cancel-button
+      :title="activeNotice?.title || $t('home.announcement')"
+      :show-cancel-button="false"
       :confirm-button-text="$t('common.confirm')"
     >
-      <div class="announcement-content">{{ announcementText }}</div>
+      <div class="announcement-content">{{ activeNotice?.content }}</div>
     </van-dialog>
 
     <!-- 3. 总览卡片：简介 + 进入任务按钮 -->
@@ -21,86 +21,40 @@
       <div class="intro-content">
         <div class="intro-title">{{ $t('home.taskMallIntroTitle') }}</div>
         <div class="intro-desc">{{ $t('home.taskMallIntro') }}</div>
-        <!-- ✅ 新增行动按钮 -->
-        <div class="intro-action">
+        <div class="intro-action action-row">
           <van-button type="primary" size="small" round block @click="$router.push('/tasks')">
             {{ $t('home.goToTaskMall') }}
+          </van-button>
+          <van-button type="success" size="small" round block @click="$router.push('/lottery')">
+            抽奖活动
           </van-button>
         </div>
       </div>
     </div>
     <van-notice-bar
+      v-if="noticeBarText"
       left-icon="volume-o"
-      text="无论我们能活多久，我们能够享受的只有无法分割的此刻，此外别无其他，zzzzzzzzzzzzzzzzzz。"
+      :text="noticeBarText"
     />
 
-    <!-- 4. 精选任务区块（重构为列表） -->
+    <!-- 4. 任务区块：mall-mission 尚无真实任务源，不展示假任务。 -->
     <div class="section-title">{{ $t('home.featuredTasks') }}</div>
-    <van-cell-group inset class="task-list">
-      <van-cell
-        v-for="task in featuredTasks"
-        :key="task.id"
-        clickable
-        @click="goTaskDetail(task.id)"
-        class="task-item"
-      >
-        <template #icon>
-          <van-image
-            :src="task.coverUrl"
-            width="80"
-            height="80"
-            fit="cover"
-            radius="6"
-            class="task-thumb"
-          />
-        </template>
-        <template #title>
-          <div class="task-content">
-            <div class="task-header">
-              <span class="task-title">{{ task.title }}</span>
-              <van-tag type="danger" v-if="task.status === 'hot'" size="medium">{{
-                $t('home.hotTag')
-              }}</van-tag>
-            </div>
-            <div class="task-desc">{{ task.description || $t('home.noDesc') }}</div>
-            <div class="task-footer">
-              <span class="task-price" v-if="task.rewardAmount">¥{{ task.rewardAmount }}</span>
-              <van-button size="small" type="primary" round>{{ $t('home.doTask') }}</van-button>
-            </div>
-          </div>
-        </template>
-      </van-cell>
-    </van-cell-group>
+    <van-empty class="empty-section" description="任务模块暂未开放" />
 
-    <!-- 5. VIP等级配置列表（替换原邀请卡片） -->
+    <!-- 5. VIP等级：后台 VIP 配置 provider 未落地，不展示假权益。 -->
     <div class="section-title">{{ $t('home.vipLevels') }}</div>
-    <van-cell-group inset class="vip-card">
-      <van-steps direction="vertical" :active="currentVipLevel" active-color="#ee0a24">
-        <van-step v-for="level in vipLevels" :key="level.id">
-          <div class="vip-level-header">
-            <span class="vip-name">{{ level.name }}</span>
-            <van-tag type="warning" v-if="level.isCurrent">{{ $t('home.currentLevel') }}</van-tag>
-          </div>
-          <div class="vip-benefits">
-            <div v-for="(benefit, idx) in level.benefits" :key="idx" class="benefit-item">
-              <van-icon name="passed" color="#07c160" size="14" />
-              <span>{{ benefit }}</span>
-            </div>
-          </div>
-          <div class="vip-condition">{{ $t('home.upgradeCondition') }}: {{ level.condition }}</div>
-        </van-step>
-      </van-steps>
-    </van-cell-group>
+    <van-empty class="empty-section" description="VIP 配置暂未开放" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { showToast } from 'vant'
+import type { ContentNotice } from '@/api/content'
+import { getNotices } from '@/api/content'
 // import { useUserStore } from '@/stores/user' // 复用已保存的用户状态
 
-const { t, locale } = useI18n()
+const { locale } = useI18n()
 // const userStore = useUserStore()
 
 // 1. 语言切换
@@ -112,96 +66,29 @@ const langOptions = [
 const onLangChange = (val: string) => {
   locale.value = val
   localStorage.setItem('app-lang', val)
+  loadNotices(val)
 }
 
-// 2. 公告弹框（复用登录响应中的 announcement 字段）
+// 2. 公告弹框与通知栏：后台内容配置是唯一来源，只展示已启用公告。
 const showAnnouncement = ref(false)
-const announcementText = ref('')
+const notices = ref<ContentNotice[]>([])
+const activeNotice = computed(() => notices.value[0])
+const noticeBarText = computed(() => activeNotice.value?.summary || activeNotice.value?.title || '')
+
+const loadNotices = async (languageCode = currentLang.value) => {
+  try {
+    notices.value = await getNotices(languageCode)
+    showAnnouncement.value = Boolean(activeNotice.value)
+  } catch {
+    notices.value = []
+    showAnnouncement.value = false
+  }
+}
+
 onMounted(() => {
-  showAnnouncement.value = true
-  // if (userStore.announcement) {
-  //   announcementText.value = userStore.announcement
-  //   showAnnouncement.value = true
-  // }
+  loadNotices()
 })
 
-// 4. 精选任务数据（扩展任务模型，新增 coverUrl）
-interface FeaturedTask {
-  id: number
-  title: string
-  coverUrl: string
-}
-
-// ✅ 确认featuredTasks数据结构包含以下字段（若接口未返回需补充mock）
-interface Task {
-  id: number
-  coverUrl: string
-  title: string // 任务标题（必填）
-  description: string // 简短描述（选填，超长自动截断）
-  rewardAmount: number // 奖励金额（选填）
-  status: 'normal' | 'hot' // 状态标识
-}
-
-// 示例数据（实际应从/api/tasks/featured获取）
-const featuredTasks = ref<Task[]>([
-  {
-    id: 1001,
-    coverUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-    title: '关注官方公众号',
-    description: '完成关注即可获得奖励，每日限1次',
-    rewardAmount: 2.5,
-    status: 'hot',
-  },
-  {
-    id: 1002,
-    coverUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-    title: '关注官方公众号',
-    description: '完成关注即可获得奖励，每日限1次',
-    rewardAmount: 2.5,
-    status: 'hot',
-  },
-  {
-    id: 1003,
-    coverUrl: 'https://fastly.jsdelivr.net/npm/@vant/assets/cat.jpeg',
-    title: '关注官方公众号',
-    description: '完成关注即可获得奖励，每日限1次',
-    rewardAmount: 2.5,
-    status: 'hot',
-  },
-  // ...其他任务
-])
-
-// ✅ 新增VIP等级数据（实际项目应从接口获取）
-interface VipLevel {
-  id: number
-  name: string
-  condition: string
-  benefits: string[]
-  isCurrent?: boolean
-}
-
-const currentVipLevel = ref(1) // 当前用户等级索引
-const vipLevels = ref<VipLevel[]>([
-  {
-    id: 1,
-    name: '普通会员',
-    condition: '注册即享',
-    benefits: ['基础任务权限', '每日3次提现'],
-    isCurrent: true,
-  },
-  {
-    id: 2,
-    name: '黄金会员',
-    condition: '累计完成50个任务',
-    benefits: ['专属高佣任务', '每日10次提现', '优先客服通道'],
-  },
-  {
-    id: 3,
-    name: '钻石会员',
-    condition: '累计收益≥5000元',
-    benefits: ['全部任务解锁', '无限提现', '专属运营对接', '月度奖金池'],
-  },
-])
 </script>
 
 <style scoped>
@@ -281,6 +168,9 @@ const vipLevels = ref<VipLevel[]>([
     }
 
     .intro-action {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
       margin-top: 10px;
 
       :deep(.van-button) {
@@ -300,116 +190,5 @@ const vipLevels = ref<VipLevel[]>([
   color: #323233;
   margin: 16px 0 8px;
   padding-left: 4px;
-}
-
-.task-list {
-  margin-top: 12px;
-
-  .task-item {
-    padding: 12px 16px;
-
-    :deep(.van-cell__left-icon) {
-      margin-right: 12px;
-      align-self: flex-start;
-    }
-
-    .task-thumb {
-      flex-shrink: 0;
-    }
-
-    .task-content {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 80px; /* 与图片等高，保证垂直居中 */
-
-      .task-header {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 4px;
-
-        .task-title {
-          font-size: 14px;
-          font-weight: 600;
-          color: #323233;
-          line-height: 1.4;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          flex: 1;
-        }
-      }
-
-      .task-desc {
-        font-size: 12px;
-        color: #969799;
-        line-height: 1.5;
-        margin-bottom: 8px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      .task-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        .task-price {
-          font-size: 16px;
-          font-weight: 700;
-          color: #ee0a24;
-        }
-      }
-    }
-  }
-}
-
-/* ✅ 新增VIP等级样式 */
-.vip-card {
-  margin-top: 16px;
-  padding: 16px;
-
-  :deep(.van-step__title) {
-    width: 100%;
-  }
-
-  .vip-level-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-
-    .vip-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: #323233;
-    }
-  }
-
-  .vip-benefits {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
-
-    .benefit-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      color: #646566;
-      background: #f7f8fa;
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-  }
-
-  .vip-condition {
-    font-size: 12px;
-    color: #969799;
-  }
 }
 </style>

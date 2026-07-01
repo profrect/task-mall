@@ -2,6 +2,7 @@ package com.mall.admin.configuration;
 
 import com.mall.admin.configuration.properties.NoAuthUrlProperties;
 import com.mall.admin.interceptor.AdminLoginInterceptor;
+import com.mall.admin.interceptor.AdminOperationLogInterceptor;
 import com.mall.admin.interceptor.AdminPermissionInterceptor;
 import jakarta.annotation.Resource;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,6 +23,9 @@ public class WebRequestConfiguration implements WebMvcConfigurer {
     @Resource
     private AdminPermissionInterceptor adminPermissionInterceptor;
 
+    @Resource
+    private AdminOperationLogInterceptor adminOperationLogInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 登录拦截器
@@ -35,6 +39,12 @@ public class WebRequestConfiguration implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns("/api/sys/admin/login")
                 .excludePathPatterns(noAuthUrlProperties.getNoPermUris());
+
+        // 操作日志拦截器：位于登录和权限之后，仅记录已通过后台鉴权的管理操作
+        registry.addInterceptor(adminOperationLogInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns("/api/sys/admin/login")
+                .excludePathPatterns(noAuthUrlProperties.getNoLoginUris());
     }
 }
 

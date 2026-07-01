@@ -5,9 +5,12 @@ import com.mall.admin.model.vo.UserInfoVO;
 import com.mall.admin.service.user.UserService;
 import com.mall.common.core.exception.BizException;
 import com.mall.common.core.result.Result;
+import com.mall.common.model.dto.req.UserStatusUpdateReq;
 import com.mybatisflex.core.paginate.Page;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,5 +27,11 @@ public class UserController {
     @GetMapping("/page")
     public Result<Page<UserInfoVO>> userPageList(UserInfoDTO dto) throws BizException {
         return Result.ok(userService.userPage(dto));
+    }
+
+    @PostMapping("/status")
+    public Result<Void> updateStatus(@RequestBody UserStatusUpdateReq req) throws BizException {
+        userService.updateStatus(req.getUserId(), req.getStatus());
+        return Result.ok();
     }
 }

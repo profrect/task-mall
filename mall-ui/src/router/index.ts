@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { store } from '@/store';
-import { Dialog } from 'vant';
+import { tokenStore } from '@/api/http';
 import { showDialog } from 'vant';
 
 const routes: RouteRecordRaw[] = [
@@ -25,22 +25,46 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '投资项目', requiresAuth: false },
   },
   {
+    path: '/lottery',
+    name: 'Lottery',
+    component: () => import('@/views/Lottery.vue'),
+    meta: { title: '抽奖活动', requiresAuth: true },
+  },
+  {
     path: '/wallet',
     name: 'Wallet',
     component: () => import('@/views/Wallet.vue'),
-    meta: { title: '我的钱包', requiresAuth: false },
+    meta: { title: '我的钱包', requiresAuth: true },
+  },
+  {
+    path: '/wallet/deposit',
+    name: 'WalletDeposit',
+    component: () => import('@/views/wallet/Deposit.vue'),
+    meta: { title: '充值', requiresAuth: true },
+  },
+  {
+    path: '/wallet/withdraw',
+    name: 'WalletWithdraw',
+    component: () => import('@/views/wallet/Withdraw.vue'),
+    meta: { title: '提现', requiresAuth: true },
+  },
+  {
+    path: '/wallet/transfer',
+    name: 'WalletTransfer',
+    component: () => import('@/views/wallet/Transfer.vue'),
+    meta: { title: '站内转账', requiresAuth: true },
   },
   {
     path: '/team',
     name: 'team',
     component: () => import('@/views/Team.vue'),
-    meta: { title: '我的团队', requiresAuth: false },
+    meta: { title: '我的团队', requiresAuth: true },
   },
   {
     path: '/profile',
     name: 'Profile',
     component: () => import('@/views/Profile.vue'),
-    meta: { title: '个人中心', requiresAuth: false },
+    meta: { title: '个人中心', requiresAuth: true },
   },
   {
     path: '/login',
@@ -64,10 +88,7 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   document.title = (to.meta.title as string) || '移动端H5';
-  if (to.meta.requiresAuth && !store.state.isLoggedIn) {
-    // Dialog.alert({ title: '提示', message: '请先登录后再访问该页面' })
-    //   .then(() => next({ name: 'Login', query: { redirect: to.fullPath } }))
-    //   .catch(() => next('/home'));
+  if (to.meta.requiresAuth && !store.state.isLoggedIn && !tokenStore.get()) {
     showDialog({
       title: '提示',
       message: '请先登录后再访问该页面'

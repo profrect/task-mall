@@ -10,5 +10,6 @@ public record VipLevelConfigVO(
         String levelName,
         BigDecimal price,
         BigDecimal rebateRate,
-        Integer dailyTasks
+        Integer dailyTasks,
+        String benefits
 ) {}

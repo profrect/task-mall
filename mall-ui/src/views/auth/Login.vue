@@ -31,7 +31,7 @@
             </van-checkbox>
             <router-link to="/auth/forgot-pwd" class="forgot-link">Forgot?</router-link>
           </div>
-          <van-button type="primary" block round native-type="submit" :disabled="!loginForm.agreed"
+          <van-button type="primary" block round native-type="submit" :loading="submitting" :disabled="!loginForm.agreed"
             >Login</van-button
           >
         </van-form>
@@ -149,7 +149,7 @@
             I agree to <a href="/terms">Terms</a> & <a href="/privacy">Privacy</a>
           </van-checkbox>
 
-          <van-button type="primary" block round native-type="submit" :disabled="!regForm.agreed">
+          <van-button type="primary" block round native-type="submit" :loading="submitting" :disabled="!regForm.agreed">
             Create Account
           </van-button>
         </van-form>
@@ -160,10 +160,19 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { showSuccessToast } from 'vant'
+import { login, register } from '@/api/auth'
+import { tokenStore } from '@/api/http'
+import { store } from '@/store'
+
+const router = useRouter()
+const route = useRoute()
 
 const activeTab = ref('login')
 const showPwd = ref(false)
 const showRegPwd = ref(false)
+const submitting = ref(false)
 
 const loginForm = reactive({ account: '', password: '', agreed: false })
 const regForm = reactive({
@@ -176,7 +185,23 @@ const regForm = reactive({
   agreed: false,
 })
 
-const onLogin = () => console.log('Login:', loginForm)
+const onLogin = async () => {
+  if (submitting.value) return
+  submitting.value = true
+  try {
+    const { accessToken } = await login({
+      account: loginForm.account.trim(),
+      password: loginForm.password,
+    })
+    tokenStore.set(accessToken)
+    store.setLoggedIn(true)
+    showSuccessToast('登录成功')
+    const redirect = (route.query.redirect as string) || '/wallet'
+    router.replace(redirect)
+  } finally {
+    submitting.value = false
+  }
+}
 
 const validatePwdStrength = (val: string) => {
   if (!val) return 'Password is required'
@@ -193,14 +218,22 @@ const checkPwdMatch = (val: string) => {
 }
 
 const onRegister = async () => {
-  // TODO: POST /api/auth/register
-  console.log('Register payload:', {
-    account: regForm.account,
-    email: regForm.email,
-    password: regForm.password,
-    inviteCode: regForm.inviteCode || undefined, // 空值不传
-    nickname: regForm.nickname,
-  })
+  if (submitting.value) return
+  submitting.value = true
+  try {
+    await register({
+      account: regForm.account.trim(),
+      password: regForm.password,
+      email: regForm.email.trim(),
+      nickname: regForm.nickname?.trim() || undefined,
+      inviteCode: regForm.inviteCode?.trim() || undefined,
+    })
+    showSuccessToast('注册成功，请登录')
+    loginForm.account = regForm.account.trim()
+    activeTab.value = 'login'
+  } finally {
+    submitting.value = false
+  }
 }
 </script>
 

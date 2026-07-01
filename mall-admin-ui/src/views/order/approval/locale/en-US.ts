@@ -1,4 +1,4 @@
 export default {
-  'menu.order':'订单管理',
-  'menu.order.deposit':'充值订单'
+  'menu.order':'Order',
+  'menu.order.approval':'Order Approval'
 };

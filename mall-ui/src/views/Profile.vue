@@ -1,116 +1,171 @@
 <template>
   <div class="profile-page">
     <van-nav-bar title="我的" left-arrow fixed placeholder @click-left="$router.back()" />
-    <!-- 用户身份总览 -->
+
     <div class="user-card">
       <div class="avatar-box">
         <van-icon name="user-o" size="28" />
       </div>
       <div class="user-info">
         <div class="name-row">
-          <span class="nickname">{{ userInfo.nickname }}</span>
-          <van-tag type="warning" effect="dark" size="medium">VIP{{ userInfo.vipLevel }}</van-tag>
+          <span class="nickname">{{ displayName }}</span>
+          <van-tag type="warning" effect="dark" size="medium">VIP{{ vipLevel }}</van-tag>
         </div>
         <div class="account-row">
-          <span class="account">ID: {{ userInfo.accountId }}</span>
+          <span class="account">ID: {{ userInfo.userId || '-' }}</span>
           <div class="invite-code" @click="copyInviteCode">
-            <span>{{ userInfo.inviteCode }}</span>
+            <span>{{ userInfo.inviteCode || '-' }}</span>
             <van-icon name="records" size="10" />
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 关系透视条 -->
     <div class="relation-bar">
       <div class="rel-item" @click="router.push('/team')">
         <span class="rel-label">Direct Superior</span>
-        <span class="rel-val">{{ userInfo.superior || 'Platform Official' }}</span>
+        <span class="rel-val">{{ userInfo.inviteUser || 'Platform Official' }}</span>
       </div>
       <div class="rel-divider"></div>
       <div class="rel-item" @click="router.push('/team?tab=members')">
         <span class="rel-label">Team Members</span>
-        <span class="rel-val">{{ userInfo.teamCount }}</span>
+        <span class="rel-val">{{ userInfo.teamMemberNum ?? 0 }}</span>
       </div>
     </div>
 
-    <!-- VIP等级升级列表 (非分页) -->
-    <div class="section-title">VIP Upgrade</div>
-    <div class="vip-list">
-      <VipCard
-        v-for="vip in vipList"
-        :key="vip.level"
-        :vip="vip"
-        :current-level="userInfo.vipLevel"
-        @upgrade="handleUpgrade"
-      />
+    <div class="section-title">Profile</div>
+    <van-cell-group inset class="security-group">
+      <van-cell title="Account" :value="userInfo.account || '-'" />
+      <van-cell title="Nickname" :value="userInfo.nickName || '-'" is-link @click="showNickDialog = true" />
+      <van-cell title="Invite Code" :value="userInfo.inviteCode || '-'" is-link @click="copyInviteCode" />
+    </van-cell-group>
+
+    <div class="section-title">VIP</div>
+    <div class="vip-section">
+      <van-loading v-if="vipLoading" class="vip-loading" />
+      <van-empty v-else-if="!vipLevels.length" description="暂无可用 VIP 配置" image="search" />
+      <div v-else class="vip-list">
+        <VipCard
+          v-for="item in vipLevels"
+          :key="item.level"
+          :vip="item"
+          :current-level="vipLevel"
+          @upgrade="confirmUpgrade"
+        />
+      </div>
     </div>
 
-    <!-- 安全设置 -->
     <div class="section-title">Security Settings</div>
     <van-cell-group inset class="security-group">
-      <van-cell title="Login Password" icon="lock" is-link to="/profile/security/login-pwd" />
-      <van-cell
-        title="Security Questions"
-        icon="shield-o"
-        is-link
-        to="/profile/security/questions"
-      />
-      <van-cell title="Fund Password" icon="balance-pay" is-link to="/profile/security/fund-pwd" />
+      <van-cell title="Login Password" icon="lock" value="未开放" />
+      <van-cell title="Security Questions" icon="shield-o" value="未开放" />
+      <van-cell title="Fund Password" icon="balance-pay" value="未开放" />
     </van-cell-group>
+
+    <van-dialog
+      v-model:show="showNickDialog"
+      title="修改昵称"
+      show-cancel-button
+      :before-close="submitNickname"
+    >
+      <van-field v-model="nickForm.nickname" label="昵称" placeholder="请输入昵称" maxlength="50" clearable />
+    </van-dialog>
 
     <div class="bottom-placeholder"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { showToast } from 'vant'
-import VipCard from '@/components/profile/VipCard.vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { showConfirmDialog, showFailToast, showSuccessToast } from 'vant'
 import router from '@/router'
+import VipCard from '@/components/profile/VipCard.vue'
+import {
+  getCurrentUser,
+  getVipLevelOverview,
+  updateCurrentUser,
+  upgradeVipLevel,
+  type UserDetail,
+  type VipLevelConfig,
+} from '@/api/user'
 
-// TODO: 替换为 /api/user/profile
-const userInfo = ref({
-  nickname: 'Alex_GM',
-  accountId: 'U20260625001',
-  vipLevel: 2,
-  inviteCode: 'AX8K2M',
-  superior: 'Sarah_Li',
-  teamCount: 42,
+const userInfo = ref<UserDetail>({
+  userId: 0,
+  account: '',
+  nickName: '',
+  vipLevel: '0',
+  inviteCode: '',
+  inviteUser: '',
+  teamMemberNum: 0,
 })
+const showNickDialog = ref(false)
+const nickForm = reactive({ nickname: '' })
+const vipLoading = ref(false)
+const vipLevels = ref<VipLevelConfig[]>([])
 
-// TODO: 替换为 /api/vip/list (全量返回，无需分页)
-const vipList = ref([
-  { level: 1, name: 'VIP1 Bronze', price: 0, benefits: ['Basic Rewards', 'Standard Support'] },
-  {
-    level: 2,
-    name: 'VIP2 Silver',
-    price: 99,
-    benefits: ['1.2x Rewards', 'Priority Support', 'Team Bonus'],
-  },
-  {
-    level: 3,
-    name: 'VIP3 Gold',
-    price: 299,
-    benefits: ['1.5x Rewards', 'Dedicated Manager', 'Exclusive Events'],
-  },
-  {
-    level: 4,
-    name: 'VIP4 Platinum',
-    price: 599,
-    benefits: ['2.0x Rewards', 'Custom Strategy', 'VIP Lounge Access'],
-  },
-])
+const vipLevel = computed(() => Number(userInfo.value.vipLevel || 0))
+const displayName = computed(() => userInfo.value.nickName || userInfo.value.account || 'User')
 
-const copyInviteCode = () => {
-  navigator.clipboard.writeText(userInfo.value.inviteCode)
-  showToast('Invite code copied')
+async function loadUser() {
+  userInfo.value = await getCurrentUser()
+  nickForm.nickname = userInfo.value.nickName || ''
 }
 
-const handleUpgrade = (vip: any) => {
-  console.log('Upgrade to VIP:', vip.level)
-  // TODO: 跳转至支付确认页或弹出支付弹窗
+async function copyInviteCode() {
+  if (!userInfo.value.inviteCode) return
+  try {
+    await navigator.clipboard.writeText(userInfo.value.inviteCode)
+    showSuccessToast('邀请码已复制')
+  } catch {
+    showFailToast('复制失败，请手动长按选择')
+  }
 }
+
+async function submitNickname(action: string): Promise<boolean> {
+  if (action !== 'confirm') return true
+  const nickname = nickForm.nickname.trim()
+  if (!nickname) {
+    showFailToast('昵称不能为空')
+    return false
+  }
+  await updateCurrentUser({ nickname })
+  showSuccessToast('资料已更新')
+  await loadUser()
+  return true
+}
+
+async function loadVipOverview() {
+  vipLoading.value = true
+  try {
+    const overview = await getVipLevelOverview()
+    vipLevels.value = overview.levels || []
+    userInfo.value.vipLevel = String(overview.currentLevel ?? vipLevel.value)
+  } finally {
+    vipLoading.value = false
+  }
+}
+
+async function confirmUpgrade(item: VipLevelConfig) {
+  if (item.level <= vipLevel.value) return
+  try {
+    await showConfirmDialog({
+      title: `升级到 ${item.levelName}`,
+      message: `确认扣款 ${item.price} USDT 购买 ${item.levelName}？`,
+    })
+    await upgradeVipLevel(item.level)
+    showSuccessToast('VIP 升级成功')
+    await Promise.all([loadUser(), loadVipOverview()])
+  } catch (error) {
+    if (error) {
+      // 业务错误已由请求层展示；这里保留取消弹窗的安静路径。
+    }
+  }
+}
+
+onMounted(() => {
+  loadUser()
+  loadVipOverview()
+})
 </script>
 
 <style scoped>
@@ -119,8 +174,6 @@ const handleUpgrade = (vip: any) => {
   min-height: 100vh;
   padding-bottom: env(safe-area-inset-bottom);
 }
-
-/* 用户身份卡片 */
 .user-card {
   display: flex;
   align-items: center;
@@ -174,8 +227,6 @@ const handleUpgrade = (vip: any) => {
   border-radius: 4px;
   cursor: pointer;
 }
-
-/* 关系透视条 */
 .relation-bar {
   display: flex;
   align-items: stretch;
@@ -213,23 +264,12 @@ const handleUpgrade = (vip: any) => {
   background: #f0f0f0;
   margin: 12px 0;
 }
-
 .section-title {
   padding: 16px 16px 8px;
   font-size: 16px;
   font-weight: 600;
   color: #333;
 }
-
-/* VIP列表 */
-.vip-list {
-  padding: 0 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* 安全设置 */
 .security-group {
   margin: 0 12px;
   border-radius: 12px;

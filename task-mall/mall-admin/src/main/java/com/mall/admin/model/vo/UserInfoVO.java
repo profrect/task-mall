@@ -2,9 +2,16 @@ package com.mall.admin.model.vo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 
 @Data
 public class UserInfoVO {
+
+    /**
+     * 全局唯一用户ID
+     */
+    private Long userId;
 
     /**
      * 账号
@@ -34,15 +41,15 @@ public class UserInfoVO {
     /**
      * 注册时间
      */
-    private String registerTime;
+    private Long registerTime;
 
     /**
      * 可用余额
      */
-    private String availableAmt;
+    private BigDecimal availableAmt;
 
     /**
      * 冻结金额
      */
-    private String freezeAmt;
+    private BigDecimal freezeAmt;
 }

@@ -110,3 +110,62 @@ CREATE TABLE `manage_user_role`
     PRIMARY KEY (`id`) USING BTREE,
     UNIQUE INDEX `uk_user_role`(`username`, `role_code`) USING BTREE COMMENT '用户-角色索引'
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 COMMENT = '用户-用户角色关联关系表';
+
+CREATE TABLE `admin_content_item`
+(
+    `id`            bigint       NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `type`          varchar(32)  NOT NULL COMMENT '内容类型：COMPANY_PROFILE/PLATFORM_PROFILE/REGULATOR/NOTICE/USER_AGREEMENT/USER_PRIVACY',
+    `language_code` varchar(16)  NOT NULL DEFAULT 'zh-CN' COMMENT '语言编码',
+    `title`         varchar(128) NOT NULL COMMENT '标题',
+    `summary`       varchar(255) NULL DEFAULT '' COMMENT '摘要',
+    `content`       text         NOT NULL COMMENT '正文',
+    `sort_order`    int          NOT NULL DEFAULT 0 COMMENT '排序，越小越靠前',
+    `status`        tinyint      NOT NULL DEFAULT 1 COMMENT '状态：1-启用，0-停用',
+    `creator`       varchar(50)  NULL DEFAULT '' COMMENT '添加人',
+    `updater`       varchar(50)  NULL DEFAULT '' COMMENT '最后修改人',
+    `create_time`   bigint       NULL DEFAULT NULL COMMENT '数据创建时间（UTC毫秒）',
+    `update_time`   bigint       NULL DEFAULT NULL COMMENT '数据最后修改时间（UTC毫秒）',
+    PRIMARY KEY (`id`) USING BTREE,
+    INDEX `idx_type_lang_status`(`type`, `language_code`, `status`) USING BTREE,
+    INDEX `idx_sort`(`sort_order`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 COMMENT = '后台运营内容配置表';
+
+CREATE TABLE `admin_system_param`
+(
+    `id`          bigint       NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `param_key`   varchar(96)  NOT NULL COMMENT '参数键',
+    `param_value` text         NULL COMMENT '参数值',
+    `description` varchar(255) NULL DEFAULT '' COMMENT '参数说明',
+    `sort_order`  int          NOT NULL DEFAULT 0 COMMENT '排序，越小越靠前',
+    `status`      tinyint      NOT NULL DEFAULT 1 COMMENT '状态：1-启用，0-停用',
+    `creator`     varchar(50)  NULL DEFAULT '' COMMENT '添加人',
+    `updater`     varchar(50)  NULL DEFAULT '' COMMENT '最后修改人',
+    `create_time` bigint       NULL DEFAULT NULL COMMENT '数据创建时间（UTC毫秒）',
+    `update_time` bigint       NULL DEFAULT NULL COMMENT '数据最后修改时间（UTC毫秒）',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE INDEX `uk_param_key`(`param_key`) USING BTREE,
+    INDEX `idx_status_sort`(`status`, `sort_order`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 COMMENT = '后台系统参数表';
+
+CREATE TABLE `admin_operation_log`
+(
+    `id`            bigint       NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `admin_account` varchar(64)  NOT NULL DEFAULT '' COMMENT '管理员账号',
+    `method`        varchar(16)  NOT NULL DEFAULT '' COMMENT '请求方法',
+    `path`          varchar(512) NOT NULL DEFAULT '' COMMENT '请求路径',
+    `query_string`  varchar(1024) NULL DEFAULT '' COMMENT '请求查询参数',
+    `action`        varchar(128) NOT NULL DEFAULT '' COMMENT '操作动作',
+    `status_code`   int          NOT NULL DEFAULT 0 COMMENT '响应状态码',
+    `success`       tinyint      NOT NULL DEFAULT 0 COMMENT '是否成功：1-成功，0-失败',
+    `duration_ms`   bigint       NOT NULL DEFAULT 0 COMMENT '请求耗时毫秒',
+    `ip_address`    varchar(64)  NULL DEFAULT '' COMMENT '操作IP地址',
+    `user_agent`    varchar(512) NULL DEFAULT '' COMMENT '浏览器标识',
+    `creator`       varchar(50)  NULL DEFAULT '' COMMENT '添加人',
+    `updater`       varchar(50)  NULL DEFAULT '' COMMENT '最后修改人',
+    `create_time`   bigint       NULL DEFAULT NULL COMMENT '数据创建时间（UTC毫秒）',
+    `update_time`   bigint       NULL DEFAULT NULL COMMENT '数据最后修改时间（UTC毫秒）',
+    PRIMARY KEY (`id`) USING BTREE,
+    INDEX `idx_admin_create`(`admin_account`, `create_time`) USING BTREE,
+    INDEX `idx_action_create`(`action`, `create_time`) USING BTREE,
+    INDEX `idx_success_create`(`success`, `create_time`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 COMMENT = '后台操作日志表';

@@ -57,22 +57,53 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { showToast } from 'vant'
 import OrderList from '@/components/wallet/OrderList.vue'
+import { getOverview } from '@/api/wallet'
+import { tokenStore } from '@/api/http'
 
+const router = useRouter()
 const activeTab = ref('flow')
 
-// TODO: 替换为 /api/wallet/assets
 const assets = ref({
-  totalBalance: '1,250.00',
-  available: '450.00',
-  frozen: '800.00',
+  totalBalance: '0.00',
+  available: '0.00',
+  frozen: '0.00',
 })
 
-const handleAction = (type: string) => {
-  console.log('Wallet action:', type)
-  // TODO: 跳转至对应操作页或弹出弹窗
+const fmt = (n: number) =>
+  Number(n ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+async function loadOverview() {
+  // 未登录则不拉取，避免触发 401 跳转；展示占位 0
+  if (!tokenStore.get()) return
+  const o = await getOverview()
+  assets.value = {
+    totalBalance: fmt(o.totalBalance),
+    available: fmt(o.availBalance),
+    frozen: fmt(o.frozenBalance),
+  }
 }
+
+const handleAction = (type: string) => {
+  if (type === 'deposit') {
+    router.push('/wallet/deposit')
+    return
+  }
+  if (type === 'withdraw') {
+    router.push('/wallet/withdraw')
+    return
+  }
+  if (type === 'transfer') {
+    router.push('/wallet/transfer')
+    return
+  }
+  showToast('该功能即将开放')
+}
+
+onMounted(loadOverview)
 </script>
 
 <style scoped>

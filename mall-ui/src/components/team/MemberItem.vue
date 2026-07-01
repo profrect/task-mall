@@ -1,56 +1,73 @@
 <template>
-  <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-    <van-list
-      v-model:loading="loading"
-      :finished="finished"
-      finished-text="No more members"
-      @load="onLoad"
-    >
-      <div class="list-wrapper">
-        <MemberItem v-for="m in list" :key="m.id" :member="m" />
+  <div class="member-item">
+    <div class="avatar">
+      <van-icon name="user-o" />
+    </div>
+    <div class="info">
+      <div class="name-row">
+        <span class="name">{{ member.nickname || '未设置昵称' }}</span>
+        <van-tag type="primary" plain>VIP{{ member.vipLevel || 0 }}</van-tag>
       </div>
-      <van-empty v-if="!loading && !list.length" description="No subordinates yet" image="search" />
-    </van-list>
-  </van-pull-refresh>
+      <span class="join-time">加入时间：{{ formatTime(member.invitateTime) }}</span>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import MemberItem from './MemberItem.vue';
+import type { TeamMemberRecord } from '@/api/user'
 
-const list = ref<any[]>([]);
-const loading = ref(false);
-const finished = ref(false);
-const refreshing = ref(false);
-const pageNum = ref(1);
+defineProps<{
+  member: TeamMemberRecord
+}>()
 
-const onLoad = async () => {
-  try {
-    // TODO: 替换为 /api/team/subordinates?page=x&size=15
-  //   await new Promise(r => setTimeout(r, 600));
-  //   const mockData = Array.from({ length: 15 }, (_, i) => ({
-  //     id: m-{pageNum.value}-{i},
-  //     nickname: User_{1000 + pageNum.value * 15 + i},
-  //   level: Math.floor(Math.random() * 5) + 1,
-  //     joinTime: '2026-06-20',
-  //     contribution: +(Math.random() * 200 + 10).toFixed(2),
-  //     status: i % 7 === 0 ? 'inactive' : 'active'
-  // }));
-    if (refreshing.value) { list.value = []; refreshing.value = false; }
-    // list.value.push(...mockData);
-    pageNum.value++;
-    if (pageNum.value > 5) finished.value = true;
-  } finally { loading.value = false; }
-};
-
-const onRefresh = () => { pageNum.value = 1; finished.value = false; loading.value = true; onLoad(); };
+function formatTime(ms: number): string {
+  if (!ms) return '-'
+  const d = new Date(ms)
+  const p = (x: number) => String(x).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
 </script>
 
 <style scoped>
-.list-wrapper {
-  padding: 12px;
+.member-item {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e8eaf6;
+  color: #3949ab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.info {
+  flex: 1;
+  min-width: 0;
+}
+.name-row {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  margin-bottom: 4px;
+}
+.name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.join-time {
+  font-size: 11px;
+  color: #999;
 }
 </style>

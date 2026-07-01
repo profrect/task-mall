@@ -1,4 +1,4 @@
 export default {
-  'menu.report':'报表管理',
-  'menu.report.summary':'综合报表'
+  'menu.sys-log': 'System Logs',
+  'menu.sys-log.operation': 'Operation Logs',
 };

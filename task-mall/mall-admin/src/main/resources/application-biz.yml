@@ -19,3 +19,21 @@ sa-token:
   is-log: true
   is-read-cookie: false
   is-read-header: true
+
+# 开放接口：移动端首页读取启用公告、排行榜聚合读模型，不要求后台登录态。
+nemojoy:
+  web:
+    no-login-uris:
+      - /api/open/content/**
+      - /api/open/leaderboard/**
+    no-perm-uris:
+      - /api/open/content/**
+      - /api/open/leaderboard/**
+
+# 下游服务地址（阶段1无注册中心，硬编码直连；地址配置化，修正历史写死的 12000 错配）
+mall:
+  service:
+    wallet-base-url: http://127.0.0.1:10002
+    user-base-url: http://127.0.0.1:10001
+    mission-base-url: http://127.0.0.1:10003
+    promotion-base-url: http://127.0.0.1:10004

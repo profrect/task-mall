@@ -15,6 +15,12 @@ public enum AdminRespCodeEnum implements RespCode {
 
     ROLE_NOT_EXIST(20005, "角色信息不存在"),
 
+    CONTENT_TYPE_INVALID(20006, "内容类型无效：%s"),
+
+    SYSTEM_PARAM_KEY_REPEAT(20007, "系统参数键重复：%s"),
+
+    ORDER_APPROVAL_SOURCE_INVALID(20008, "订单审核来源无效：%s"),
+
     ;
 
     private final Integer code;

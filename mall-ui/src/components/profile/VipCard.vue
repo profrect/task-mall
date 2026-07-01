@@ -1,21 +1,21 @@
 <template>
   <div class="vip-card" :class="{ current: isCurrent, locked: isLocked }">
     <div class="card-header">
-      <span class="vip-name">{{ vip.name }}</span>
+      <span class="vip-name">{{ vip.levelName }}</span>
       <van-tag v-if="isCurrent" type="warning" effect="dark">Current</van-tag>
       <van-tag v-else-if="isAchieved" type="success" plain>Achieved</van-tag>
     </div>
 
     <div class="benefits">
       <van-tag
-        v-for="(b, idx) in vip.benefits"
-        :key="idx"
+        v-for="benefit in benefits"
+        :key="benefit"
         plain
         type="primary"
         size="small"
         class="benefit-tag"
       >
-        {{ b }}
+        {{ benefit }}
       </van-tag>
     </div>
 
@@ -38,14 +38,20 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { VipLevelConfig } from '@/api/user'
 
 const props = defineProps<{
-  vip: { level: number; name: string; price: number; benefits: string[] }
+  vip: VipLevelConfig
   currentLevel: number
 }>()
 
 defineEmits(['upgrade'])
 
+const benefits = computed(() => {
+  const text = props.vip.benefits || ''
+  const list = text.split(/[\n,，]/).map((v) => v.trim()).filter(Boolean)
+  return list.length ? list : ['标准会员权益']
+})
 const isCurrent = computed(() => props.vip.level === props.currentLevel)
 const isAchieved = computed(() => props.vip.level < props.currentLevel)
 // 只能逐级升级，不能跳级购买

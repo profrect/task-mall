@@ -3,47 +3,57 @@
     <van-list
       v-model:loading="loading"
       :finished="finished"
-      finished-text="No more earnings"
+      finished-text="没有更多收益"
       @load="onLoad"
     >
       <div class="list-wrapper">
-        <EarningItem v-for="e in list" :key="e.id" :earning="e" />
+        <EarningItem v-for="item in list" :key="item.recordNo" :record="item" />
       </div>
-      <van-empty v-if="!loading && !list.length" description="No earnings yet" image="search" />
+      <van-empty v-if="!loading && !list.length" description="暂无真实团队收益" image="search">
+        <template #description>
+          <div class="desc">
+            下级完成符合规则的付费 VIP 升级后，系统会生成返佣记录并通过钱包入账。
+          </div>
+        </template>
+      </van-empty>
     </van-list>
   </van-pull-refresh>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import EarningItem from './EarningItem.vue';
+import { ref } from 'vue'
+import { getTeamEarnings, type InviteCommissionRecord } from '@/api/user'
+import EarningItem from './EarningItem.vue'
 
-const list = ref<any[]>([]);
-const loading = ref(false);
-const finished = ref(false);
-const refreshing = ref(false);
-const pageNum = ref(1);
+const PAGE_SIZE = 15
 
-const onLoad = async () => {
+const list = ref<InviteCommissionRecord[]>([])
+const loading = ref(false)
+const finished = ref(false)
+const refreshing = ref(false)
+const pageNum = ref(1)
+
+async function onLoad() {
   try {
-    // TODO: 替换为 /api/team/earnings?page=x&size=15
-  //   await new Promise(r => setTimeout(r, 600));
-  //   const types = ['direct_reward', 'level_bonus', 'team_dividend'];
-  //   const mockData = Array.from({ length: 15 }, (_, i) => ({
-  //     id: e-{pageNum.value}-{i},
-  //     type: types[i % 3],
-  //     amount: +(Math.random() * 50 + 1).toFixed(2),
-  //     source: User_{2000 + i},
-  //   time: '2026-06-24 14:30'
-  // }));
-    if (refreshing.value) { list.value = []; refreshing.value = false; }
-    // list.value.push(...mockData);
-    pageNum.value++;
-    if (pageNum.value > 5) finished.value = true;
-  } finally { loading.value = false; }
-};
+    if (refreshing.value) {
+      list.value = []
+      refreshing.value = false
+    }
+    const page = await getTeamEarnings(pageNum.value, PAGE_SIZE)
+    list.value.push(...page.records)
+    pageNum.value += 1
+    finished.value = list.value.length >= page.totalRow || page.records.length < PAGE_SIZE
+  } finally {
+    loading.value = false
+  }
+}
 
-const onRefresh = () => { pageNum.value = 1; finished.value = false; loading.value = true; onLoad(); };
+function onRefresh() {
+  pageNum.value = 1
+  finished.value = false
+  loading.value = true
+  onLoad()
+}
 </script>
 
 <style scoped>
@@ -52,5 +62,12 @@ const onRefresh = () => { pageNum.value = 1; finished.value = false; loading.val
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.desc {
+  max-width: 280px;
+  margin: 0 auto;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #999;
 }
 </style>

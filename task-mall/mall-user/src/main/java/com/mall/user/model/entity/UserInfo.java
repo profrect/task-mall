@@ -1,11 +1,13 @@
 package com.mall.user.model.entity;
 
 import com.mall.common.db.entity.BaseEntity;
+import com.mall.common.db.listener.CustomInsertListener;
+import com.mall.common.db.listener.CustomUpdateListener;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 @Data
-@Table("user_info")
+@Table(value = "user_info", onInsert = CustomInsertListener.class, onUpdate = CustomUpdateListener.class)
 public class UserInfo extends BaseEntity<Long> {
 
     /**
@@ -34,9 +36,9 @@ public class UserInfo extends BaseEntity<Long> {
     private Integer vipLevel;
 
     /**
-     * 邀请人
+     * 邀请人user_id
      */
-    private Long inviterUser;
+    private Long inviter;
 
     /**
      * 用户状态（1-正常，2-冻结）

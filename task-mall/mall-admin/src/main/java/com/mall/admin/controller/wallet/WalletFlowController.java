@@ -26,8 +26,8 @@ public class WalletFlowController {
     /** 全站账务流水：userId 可选，最新在前，limit 限量。 */
     @GetMapping("/list")
     public Result<List<WalletFlowResp>> list(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) Integer limit) throws BizException {
+            @RequestParam(name = "userId", required = false) Long userId,
+            @RequestParam(name = "limit", required = false) Integer limit) throws BizException {
         return Result.ok(walletFlowAdminService.list(userId, limit));
     }
 }

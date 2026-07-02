@@ -42,8 +42,8 @@ public class WalletAccountProviderController {
     /** 钱包资金统计快照；todayStartAt 由聚合方传入，统一报表自然日口径。 */
     @GetMapping("/stats")
     public Result<WalletStatsResp> stats(
-            @RequestParam(required = false, defaultValue = "USDT") String currency,
-            @RequestParam Long todayStartAt) throws BizException {
+            @RequestParam(name = "currency", required = false, defaultValue = "USDT") String currency,
+            @RequestParam(name = "todayStartAt") Long todayStartAt) throws BizException {
         return Result.ok(walletAccountService.stats(currency, todayStartAt));
     }
 

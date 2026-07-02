@@ -23,5 +23,18 @@ public class BizException extends Exception {
 
     public BizException(int code, String msg) {
         super(msg);
+        this.respCode = new SimpleRespCode(code, msg);
+    }
+
+    private record SimpleRespCode(int code, String msg) implements RespCode {
+        @Override
+        public int getCode() {
+            return code;
+        }
+
+        @Override
+        public String getMsg() {
+            return msg;
+        }
     }
 }

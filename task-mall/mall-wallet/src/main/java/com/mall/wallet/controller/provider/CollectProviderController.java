@@ -41,7 +41,7 @@ public class CollectProviderController {
      * 仅建单不广播；广播由后续推进（手工 /advance 或定时任务）完成。
      */
     @PostMapping("/scan")
-    public Result<Integer> scan(@RequestParam(required = false) String chainCode) {
+    public Result<Integer> scan(@RequestParam(name = "chainCode", required = false) String chainCode) {
         int created = 0;
         if (StringUtils.hasText(chainCode)) {
             created = collectService.scanAndCreate(ChainCode.valueOf(chainCode.trim().toUpperCase(Locale.ROOT)));
@@ -68,7 +68,7 @@ public class CollectProviderController {
 
     /** 按状态查询归集订单。 */
     @GetMapping("/list")
-    public Result<List<CollectOrderResp>> list(@RequestParam String status) {
+    public Result<List<CollectOrderResp>> list(@RequestParam(name = "status") String status) {
         List<CollectOrderResp> list = collectService.listByStatus(CollectStatus.valueOf(status.trim().toUpperCase(Locale.ROOT)))
                 .stream().map(this::toResp).toList();
         return Result.ok(list);

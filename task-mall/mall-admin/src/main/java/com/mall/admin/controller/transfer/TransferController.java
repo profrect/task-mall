@@ -22,8 +22,8 @@ public class TransferController {
 
     @GetMapping("/list")
     public Result<List<WalletTransferOrderResp>> list(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) Integer limit) throws BizException {
+            @RequestParam(name = "userId", required = false) Long userId,
+            @RequestParam(name = "limit", required = false) Integer limit) throws BizException {
         return Result.ok(transferAdminService.list(userId, limit));
     }
 }

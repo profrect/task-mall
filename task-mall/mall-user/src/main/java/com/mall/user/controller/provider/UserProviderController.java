@@ -54,7 +54,7 @@ public class UserProviderController {
     }
 
     @GetMapping("/stats")
-    public Result<UserStatsResp> stats(@RequestParam Long todayStartAt) {
+    public Result<UserStatsResp> stats(@RequestParam(name = "todayStartAt") Long todayStartAt) {
         return Result.ok(userInfoService.stats(todayStartAt));
     }
 
@@ -81,7 +81,7 @@ public class UserProviderController {
     }
 
     @GetMapping("/vip/config/list")
-    public Result<List<VipLevelConfigResp>> vipConfigList(@RequestParam(required = false) Integer status)
+    public Result<List<VipLevelConfigResp>> vipConfigList(@RequestParam(name = "status", required = false) Integer status)
             throws BizException {
         return Result.ok(vipService.configList(status));
     }

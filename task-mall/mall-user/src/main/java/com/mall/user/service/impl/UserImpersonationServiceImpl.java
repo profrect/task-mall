@@ -21,7 +21,6 @@ import com.mybatisflex.core.query.QueryWrapper;
 import jakarta.annotation.Resource;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -90,7 +89,6 @@ public class UserImpersonationServiceImpl implements UserImpersonationService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public UserLoginVO exchange(UserImpersonationExchangeReq req) throws BizException {
         Preconditions.notNull(req, CommonRespCode.PARAM_MISSING);
         Preconditions.needTrue(StringUtils.hasText(req.getTicket()), UserRespCodeEnum.IMPERSONATION_TICKET_INVALID);

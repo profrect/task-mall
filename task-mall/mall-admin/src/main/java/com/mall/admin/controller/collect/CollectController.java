@@ -34,13 +34,13 @@ public class CollectController {
 
     /** 按状态查询归集订单（CREATED/GAS_FUNDING/SWEEPING/COMPLETED/FAILED）。 */
     @GetMapping("/list")
-    public Result<List<CollectOrderResp>> list(@RequestParam String status) throws BizException {
+    public Result<List<CollectOrderResp>> list(@RequestParam(name = "status") String status) throws BizException {
         return Result.ok(collectAdminService.listByStatus(status));
     }
 
     /** 手工触发扫描建单：chainCode 可选，留空则扫所有已接入链。返回新建订单数。 */
     @PostMapping("/scan")
-    public Result<Integer> scan(@RequestParam(required = false) String chainCode) throws BizException {
+    public Result<Integer> scan(@RequestParam(name = "chainCode", required = false) String chainCode) throws BizException {
         return Result.ok(collectAdminService.scan(chainCode));
     }
 

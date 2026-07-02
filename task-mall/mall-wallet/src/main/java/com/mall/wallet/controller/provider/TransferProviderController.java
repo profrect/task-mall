@@ -22,8 +22,8 @@ public class TransferProviderController {
 
     @GetMapping("/list")
     public Result<List<WalletTransferOrderResp>> list(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false, defaultValue = "200") Integer limit) {
+            @RequestParam(name = "userId", required = false) Long userId,
+            @RequestParam(name = "limit", required = false, defaultValue = "200") Integer limit) {
         return Result.ok(transferService.listForAdmin(userId, limit)
                 .stream()
                 .map(this::toResp)

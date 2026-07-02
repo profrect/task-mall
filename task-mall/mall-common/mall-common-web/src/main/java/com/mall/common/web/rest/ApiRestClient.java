@@ -66,7 +66,7 @@ public class ApiRestClient {
         }
         if(result.code() != CommonRespCode.OK.getCode()) {
             log.error("--->> 远程调用结果出错：code:{}, msg:{}", result.code(), result.msg());
-            throw new BizException();
+            throw new BizException(result.code(), result.msg());
         }
     }
 

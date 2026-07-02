@@ -38,8 +38,8 @@ public class RechargeProviderController {
      */
     @GetMapping("/list")
     public Result<List<RechargeOrderResp>> list(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false, defaultValue = "200") Integer limit) {
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "limit", required = false, defaultValue = "200") Integer limit) {
         int safeLimit = limit == null || limit <= 0 ? DEFAULT_LIMIT : Math.min(limit, MAX_LIMIT);
         List<RechargeOrderResp> list = rechargeService.listForAdmin(status, safeLimit).stream()
                 .map(this::toResp)

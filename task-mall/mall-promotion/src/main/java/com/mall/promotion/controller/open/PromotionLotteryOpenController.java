@@ -36,7 +36,7 @@ public class PromotionLotteryOpenController {
     }
 
     @GetMapping("/records")
-    public Result<List<PromotionLotteryRecordResp>> records(@RequestParam(required = false) Integer limit)
+    public Result<List<PromotionLotteryRecordResp>> records(@RequestParam(name = "limit", required = false) Integer limit)
             throws BizException {
         return Result.ok(promotionLotteryService.userRecords(AuthUtils.currentUserId(), limit));
     }

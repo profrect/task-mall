@@ -35,8 +35,8 @@ public class MissionOpenController {
 
     @GetMapping("/tasks")
     public Result<List<MissionTaskVO>> tasks(
-            @RequestParam(defaultValue = "available") String status,
-            @RequestParam(required = false) Integer limit) throws BizException {
+            @RequestParam(name = "status", defaultValue = "available") String status,
+            @RequestParam(name = "limit", required = false) Integer limit) throws BizException {
         return Result.ok(missionService.userTasks(AuthUtils.currentUserId(), status, limit));
     }
 
@@ -54,13 +54,13 @@ public class MissionOpenController {
 
     @GetMapping("/records")
     public Result<List<MissionUserTaskResp>> records(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) Integer limit) throws BizException {
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "limit", required = false) Integer limit) throws BizException {
         return Result.ok(missionService.records(AuthUtils.currentUserId(), status, limit));
     }
 
     @GetMapping("/invest/projects")
-    public Result<List<MissionInvestProjectVO>> investProjects(@RequestParam(required = false) Integer limit)
+    public Result<List<MissionInvestProjectVO>> investProjects(@RequestParam(name = "limit", required = false) Integer limit)
             throws BizException {
         return Result.ok(missionService.investProjects(limit));
     }

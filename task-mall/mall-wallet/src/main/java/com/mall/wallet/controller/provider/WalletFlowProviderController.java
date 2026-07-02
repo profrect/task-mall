@@ -31,8 +31,8 @@ public class WalletFlowProviderController {
     /** 全站账务流水：userId 可选，最新在前，limit 默认 200、最大 1000。 */
     @GetMapping("/list")
     public Result<List<WalletFlowResp>> list(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false, defaultValue = "200") Integer limit) {
+            @RequestParam(name = "userId", required = false) Long userId,
+            @RequestParam(name = "limit", required = false, defaultValue = "200") Integer limit) {
         return Result.ok(walletFlowQueryService.listForAdmin(userId, limit == null ? 200 : limit)
                 .stream()
                 .map(this::toResp)

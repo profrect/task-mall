@@ -28,8 +28,8 @@ public class RechargeController {
     /** 充值订单列表：status 可选（CONFIRMING/CREDITED），留空查全部；最新在前，limit 限量。 */
     @GetMapping("/list")
     public Result<List<RechargeOrderResp>> list(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) Integer limit) throws BizException {
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "limit", required = false) Integer limit) throws BizException {
         return Result.ok(rechargeQueryService.list(status, limit));
     }
 }

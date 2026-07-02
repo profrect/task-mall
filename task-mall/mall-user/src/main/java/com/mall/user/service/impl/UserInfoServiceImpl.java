@@ -79,7 +79,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
                 .collect(Collectors.toMap(UserAccount::getUserId, Function.identity(), (a, b) -> a));
 
         List<UserResp> rows = users.stream()
-                .map(info -> toUserResp(info, accountMap.get(info.getUserId()), inviterAccountMap.get(info.getInviter())))
+                .map(info -> {
+                    Long inviterId = info.getInviter();
+                    UserAccount inviterAccount = inviterId == null ? null : inviterAccountMap.get(inviterId);
+                    return toUserResp(info, accountMap.get(info.getUserId()), inviterAccount);
+                })
                 .toList();
         return new Page<>(rows, source.getPageNumber(), source.getPageSize(), source.getTotalRow());
     }

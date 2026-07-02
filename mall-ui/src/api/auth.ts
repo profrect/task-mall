@@ -22,11 +22,19 @@ export interface LoginResult {
   tokenType: string;
 }
 
+export interface ImpersonationExchangePayload {
+  ticket: string;
+}
+
 const BASE = '/api/open/user/account';
 
 /** 登录：成功返回 sa-token 访问令牌，调用方负责落库 token。 */
 export function login(payload: LoginPayload): Promise<LoginResult> {
   return http.post<LoginResult>(`${BASE}/login`, payload, false);
+}
+
+export function exchangeImpersonationTicket(payload: ImpersonationExchangePayload): Promise<LoginResult> {
+  return http.post<LoginResult>(`${BASE}/impersonation-exchange`, payload, false);
 }
 
 /** 注册：不要求任何实名/KYC；inviteCode 为空则不绑定邀请关系。 */

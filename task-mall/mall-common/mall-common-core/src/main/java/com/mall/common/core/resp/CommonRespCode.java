@@ -27,6 +27,7 @@ public enum CommonRespCode implements RespCode {
     // 认证和权限错误
     AUTH_DENIED(10010, "common.error.auth_denied"),
     PERMISSION_DENIED(10011, "common.error.permission_denied"),
+    IMPERSONATION_READONLY(10012, "模拟登录仅允许查看"),
     ;
 
     private final int code;

@@ -25,6 +25,14 @@ export interface MemberUser {
   freezeAmt: number;
 }
 
+export interface MemberImpersonationTicket {
+  ticket: string;
+
+  expiresIn: number;
+
+  expiresAt: number;
+}
+
 const uri = '/api/admin/user';
 
 export function queryMemberList(
@@ -42,6 +50,16 @@ export function updateMemberStatus(data: {
 }): Promise<ResultInfo<null>> {
   return request({
     url: `${uri}/status`,
+    method: 'post',
+    data,
+  });
+}
+
+export function createMemberImpersonationTicket(data: {
+  id: number;
+}): Promise<ResultInfo<MemberImpersonationTicket>> {
+  return request({
+    url: `${uri}/impersonation-ticket`,
     method: 'post',
     data,
   });

@@ -18,6 +18,9 @@ public enum UserRespCodeEnum implements RespCode {
     VIP_CONFIG_NOT_FOUND(21010, "VIP配置不存在：%s"),
     VIP_LEVEL_REPEAT(21011, "VIP等级已存在：%s"),
     VIP_BASE_LEVEL_LOCKED(21012, "基础VIP等级不能删除"),
+    IMPERSONATION_TICKET_INVALID(21013, "模拟登录票据无效"),
+    IMPERSONATION_TICKET_EXPIRED(21014, "模拟登录票据已过期"),
+    IMPERSONATION_ADMIN_INVALID(21015, "模拟登录管理员无效"),
     ;
 
     private final Integer code;

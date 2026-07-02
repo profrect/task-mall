@@ -88,6 +88,7 @@ import {
   type UserDetail,
   type VipLevelConfig,
 } from '@/api/user'
+import { rejectIfImpersonated } from '@/utils/impersonation'
 
 const userInfo = ref<UserDetail>({
   userId: 0,
@@ -123,6 +124,7 @@ async function copyInviteCode() {
 
 async function submitNickname(action: string): Promise<boolean> {
   if (action !== 'confirm') return true
+  if (rejectIfImpersonated()) return false
   const nickname = nickForm.nickname.trim()
   if (!nickname) {
     showFailToast('昵称不能为空')
@@ -147,6 +149,7 @@ async function loadVipOverview() {
 
 async function confirmUpgrade(item: VipLevelConfig) {
   if (item.level <= vipLevel.value) return
+  if (rejectIfImpersonated()) return
   try {
     await showConfirmDialog({
       title: `升级到 ${item.levelName}`,

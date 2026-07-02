@@ -40,6 +40,7 @@ public class UserInfoOpenController {
      */
     @PutMapping("/update")
     public Result<Void> updateUserInfo(@RequestBody @Validated UserInfoDTO userInfoDTO) throws BizException {
+        AuthUtils.ensureNotImpersonated();
         userInfoService.updateUserInfo(AuthUtils.currentUserId(), userInfoDTO);
         return Result.ok();
     }
@@ -57,6 +58,7 @@ public class UserInfoOpenController {
      */
     @PostMapping("/vip-level-up")
     public Result<VipUpgradeOrderVO> vipLevelUp(@RequestBody @Validated VipLevelUpDTO levelUpDTO) throws BizException {
+        AuthUtils.ensureNotImpersonated();
         return Result.ok(vipService.upgrade(AuthUtils.currentUserId(), levelUpDTO));
     }
 }

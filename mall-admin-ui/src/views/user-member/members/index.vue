@@ -35,20 +35,32 @@
           {{ record.registerTime ? parseTime(record.registerTime) : '-' }}
         </template>
         <template #operations="{ record }">
-          <a-popconfirm
-            v-if="record.status === 1"
-            content="确认冻结该会员？冻结后该会员当前登录态会失效。"
-            @ok="changeStatus(record, 2)"
-          >
-            <a-button type="text" size="mini" status="danger">冻结</a-button>
-          </a-popconfirm>
-          <a-popconfirm
-            v-else
-            content="确认恢复该会员为正常状态？"
-            @ok="changeStatus(record, 1)"
-          >
-            <a-button type="text" size="mini" status="success">解冻</a-button>
-          </a-popconfirm>
+          <a-space :size="4">
+            <a-button
+              type="text"
+              size="mini"
+              status="warning"
+              :disabled="record.status !== 1"
+              :loading="impersonatingUserId === record.userId"
+              @click="openImpersonation(record)"
+            >
+              模拟登录
+            </a-button>
+            <a-popconfirm
+              v-if="record.status === 1"
+              content="确认冻结该会员？冻结后该会员当前登录态会失效。"
+              @ok="changeStatus(record, 2)"
+            >
+              <a-button type="text" size="mini" status="danger">冻结</a-button>
+            </a-popconfirm>
+            <a-popconfirm
+              v-else
+              content="确认恢复该会员为正常状态？"
+              @ok="changeStatus(record, 1)"
+            >
+              <a-button type="text" size="mini" status="success">解冻</a-button>
+            </a-popconfirm>
+          </a-space>
         </template>
       </a-table>
       <a-pagination
@@ -66,10 +78,13 @@
 
 <script setup lang="ts">
   import { reactive, ref } from 'vue';
+  import { Message } from '@arco-design/web-vue';
   import type { TableColumnData } from '@arco-design/web-vue/es/table/interface';
   import { parseTime } from '@/utils/dateUtils';
+  import { openWindow } from '@/utils';
   import PageData from '@/model/pageData';
   import {
+    createMemberImpersonationTicket,
     queryMemberList,
     updateMemberStatus,
     MemberUser,
@@ -140,14 +155,16 @@
       slotName: 'operations',
       align: 'center',
       fixed: 'right',
-      width: 100,
+      width: 180,
     },
   ];
 
   const tableData = ref<MemberUser[]>([]);
   const loading = ref(false);
   const statusUpdating = ref(false);
+  const impersonatingUserId = ref<number | null>(null);
   const page = reactive(new PageData());
+  const h5BaseUrl = (import.meta.env.VITE_H5_BASE_URL || 'http://127.0.0.1:5173').replace(/\/$/, '');
 
   const fetchData = () => {
     loading.value = true;
@@ -182,6 +199,27 @@
       })
       .finally(() => {
         statusUpdating.value = false;
+      });
+  };
+
+  const openImpersonation = (record: MemberUser) => {
+    if (record.status !== 1 || impersonatingUserId.value) {
+      return;
+    }
+    impersonatingUserId.value = record.userId;
+    createMemberImpersonationTicket({ id: record.userId })
+      .then((rep) => {
+        if (rep.success && rep.data?.ticket) {
+          const ticket = encodeURIComponent(rep.data.ticket);
+          const redirect = encodeURIComponent('/profile');
+          openWindow(`${h5BaseUrl}/#/admin-login?ticket=${ticket}&redirect=${redirect}`, {
+            target: '_blank',
+          });
+          Message.success('模拟登录票据已生成，请在新窗口查看前台');
+        }
+      })
+      .finally(() => {
+        impersonatingUserId.value = null;
       });
   };
 

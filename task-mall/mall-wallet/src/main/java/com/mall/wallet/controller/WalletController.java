@@ -89,6 +89,7 @@ public class WalletController {
     @GetMapping("/deposit/address")
     public Result<DepositAddressVO> depositAddress(
             @RequestParam(value = "chain", defaultValue = "TRON") String chain) throws BizException {
+        AuthUtils.ensureNotImpersonated();
         Long userId = AuthUtils.currentUserId();
         ChainCode chainCode = parseChain(chain);
         // 仅当该链充值扫块已启用(chain_config.enabled=1)才发放收款地址：杜绝发出无人扫块入账的地址、
@@ -121,6 +122,7 @@ public class WalletController {
      */
     @PostMapping("/withdraw/apply")
     public Result<WithdrawOrderVO> withdrawApply(@RequestBody WithdrawApplyDTO dto) throws BizException {
+        AuthUtils.ensureNotImpersonated();
         Long userId = AuthUtils.currentUserId();
         ChainCode chainCode = parseChain(dto.getChain());
         WalletWithdrawOrder order = withdrawService.apply(
@@ -145,6 +147,7 @@ public class WalletController {
      */
     @PostMapping("/transfer/apply")
     public Result<TransferOrderVO> transferApply(@RequestBody TransferApplyDTO dto) throws BizException {
+        AuthUtils.ensureNotImpersonated();
         Long userId = AuthUtils.currentUserId();
         WalletTransferOrder order = transferService.apply(
                 userId, dto.getToUserId(), dto.getCoin(), dto.getAmount(), dto.getRemark());

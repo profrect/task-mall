@@ -55,6 +55,7 @@ import { onMounted, ref } from 'vue'
 import { showSuccessToast, showFailToast } from 'vant'
 import { toDataURL } from 'qrcode'
 import { getDepositAddress, getRechargeRecords, type RechargeRecord } from '@/api/wallet'
+import { rejectIfImpersonated } from '@/utils/impersonation'
 
 // 阶段1 TRON 入账确认门槛（与后端 wallet.tron.min-confirmations 默认值一致，仅用于展示）
 const MIN_CONF = 19
@@ -68,6 +69,10 @@ const loadingRec = ref(false)
 const refreshing = ref(false)
 
 async function loadAddress() {
+  if (rejectIfImpersonated('模拟登录仅可查看充值记录，不能分配或复制充值地址')) {
+    loadingAddr.value = false
+    return
+  }
   loadingAddr.value = true
   try {
     const res = await getDepositAddress('TRON')

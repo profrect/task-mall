@@ -5,10 +5,13 @@ import com.mall.admin.configuration.properties.ServiceEndpointProperties;
 import com.mall.admin.model.dto.UserInfoDTO;
 import com.mall.admin.model.vo.UserInfoVO;
 import com.mall.admin.service.user.UserService;
+import com.mall.common.core.context.UserContext;
 import com.mall.common.core.exception.BizException;
+import com.mall.common.model.dto.req.UserImpersonationTicketReq;
 import com.mall.common.model.dto.req.UserReq;
 import com.mall.common.model.dto.req.UserStatusUpdateReq;
 import com.mall.common.model.dto.req.WalletAccountBatchReq;
+import com.mall.common.model.dto.resp.UserImpersonationTicketResp;
 import com.mall.common.model.dto.resp.UserResp;
 import com.mall.common.model.dto.resp.WalletAccountResp;
 import com.mall.common.web.rest.ApiRestClient;
@@ -34,6 +37,7 @@ public class UserServiceImpl implements UserService {
 
     private static final String USER_PAGE_PATH = "/api/provider/user/user-page";
     private static final String USER_STATUS_PATH = "/api/provider/user/status";
+    private static final String USER_IMPERSONATION_TICKET_PATH = "/api/provider/user/impersonation-ticket";
     private static final String WALLET_BATCH_PATH = "/api/provider/wallet/account/batch";
     private static final String DEFAULT_CURRENCY = "USDT";
 
@@ -69,6 +73,17 @@ public class UserServiceImpl implements UserService {
         req.setUserId(userId);
         req.setStatus(status);
         apiRestClient.post(userUrl(USER_STATUS_PATH), req, Void.class);
+    }
+
+    @Override
+    public UserImpersonationTicketResp createImpersonationTicket(Long userId, String adminIp, String userAgent)
+            throws BizException {
+        UserImpersonationTicketReq req = new UserImpersonationTicketReq();
+        req.setUserId(userId);
+        req.setAdminAccount(UserContext.currentUsername());
+        req.setAdminIp(adminIp);
+        req.setUserAgent(userAgent);
+        return apiRestClient.post(userUrl(USER_IMPERSONATION_TICKET_PATH), req, UserImpersonationTicketResp.class);
     }
 
     private Map<Long, WalletAccountResp> loadWalletMap(List<UserResp> users) throws BizException {

@@ -35,6 +35,7 @@ import {
   getMissionTasks,
   submitMissionTask,
 } from '@/api/mission';
+import { rejectIfImpersonated } from '@/utils/impersonation';
 import TaskItem from './TaskItem.vue';
 
 const props = defineProps<{ status: 'available' | 'in_progress' | 'completed' }>();
@@ -76,6 +77,9 @@ const onRefresh = () => {
 
 const handleAction = async (task: MissionTaskItem) => {
   if (props.status === 'available') {
+    if (rejectIfImpersonated()) {
+      return;
+    }
     await claimMissionTask(task.taskId);
     showSuccessToast('Task claimed');
     await loadList();
@@ -91,6 +95,7 @@ const handleAction = async (task: MissionTaskItem) => {
 
 const beforeSubmitClose = async (action: string) => {
   if (action !== 'confirm') return true;
+  if (rejectIfImpersonated()) return false;
   if (!activeTask.value?.recordId) return true;
   if (!submitContent.value.trim()) {
     showToast('Please enter proof');

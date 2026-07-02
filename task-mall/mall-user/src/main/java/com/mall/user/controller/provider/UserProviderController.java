@@ -2,6 +2,7 @@ package com.mall.user.controller.provider;
 
 import com.mall.common.core.exception.BizException;
 import com.mall.common.core.result.Result;
+import com.mall.common.model.dto.req.UserImpersonationTicketReq;
 import com.mall.common.model.dto.req.IdReq;
 import com.mall.common.model.dto.req.UserExistReq;
 import com.mall.common.model.dto.req.InviteCommissionRecordQueryReq;
@@ -10,12 +11,14 @@ import com.mall.common.model.dto.req.UserReq;
 import com.mall.common.model.dto.req.UserStatusUpdateReq;
 import com.mall.common.model.dto.req.VipLevelConfigReq;
 import com.mall.common.model.dto.resp.UserExistResp;
+import com.mall.common.model.dto.resp.UserImpersonationTicketResp;
 import com.mall.common.model.dto.resp.UserProfileSummaryResp;
 import com.mall.common.model.dto.resp.UserResp;
 import com.mall.common.model.dto.resp.UserStatsResp;
 import com.mall.common.model.dto.resp.InviteCommissionRecordResp;
 import com.mall.common.model.dto.resp.VipLevelConfigResp;
 import com.mall.user.service.InviteCommissionService;
+import com.mall.user.service.UserImpersonationService;
 import com.mall.user.service.UserInfoService;
 import com.mall.user.service.VipService;
 import com.mybatisflex.core.paginate.Page;
@@ -42,6 +45,9 @@ public class UserProviderController {
     @Resource
     private InviteCommissionService inviteCommissionService;
 
+    @Resource
+    private UserImpersonationService userImpersonationService;
+
     @PostMapping("/user-page")
     public Result<Page<UserResp>> userPage(@RequestBody UserReq req){
         return Result.ok(userInfoService.pageList(req));
@@ -56,6 +62,12 @@ public class UserProviderController {
     public Result<Void> updateStatus(@RequestBody UserStatusUpdateReq req) throws BizException {
         userInfoService.updateStatus(req.getUserId(), req.getStatus());
         return Result.ok();
+    }
+
+    @PostMapping("/impersonation-ticket")
+    public Result<UserImpersonationTicketResp> impersonationTicket(@RequestBody UserImpersonationTicketReq req)
+            throws BizException {
+        return Result.ok(userImpersonationService.createTicket(req));
     }
 
     @PostMapping("/exists")

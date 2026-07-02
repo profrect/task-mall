@@ -85,6 +85,7 @@ import {
   type TransferRecord,
   type WalletOverview,
 } from '@/api/wallet'
+import { rejectIfImpersonated } from '@/utils/impersonation'
 
 const overview = ref<WalletOverview>({
   userId: 0,
@@ -122,6 +123,9 @@ async function loadRecords() {
 }
 
 async function submitTransfer() {
+  if (rejectIfImpersonated()) {
+    return
+  }
   const toUserId = Number(form.toUserId)
   const amount = Number(form.amount)
   if (!Number.isInteger(toUserId) || toUserId <= 0) {

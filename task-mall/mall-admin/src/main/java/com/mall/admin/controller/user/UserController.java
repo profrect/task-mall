@@ -5,9 +5,12 @@ import com.mall.admin.model.vo.UserInfoVO;
 import com.mall.admin.service.user.UserService;
 import com.mall.common.core.exception.BizException;
 import com.mall.common.core.result.Result;
+import com.mall.common.model.dto.req.IdReq;
 import com.mall.common.model.dto.req.UserStatusUpdateReq;
+import com.mall.common.model.dto.resp.UserImpersonationTicketResp;
 import com.mybatisflex.core.paginate.Page;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,5 +36,20 @@ public class UserController {
     public Result<Void> updateStatus(@RequestBody UserStatusUpdateReq req) throws BizException {
         userService.updateStatus(req.getUserId(), req.getStatus());
         return Result.ok();
+    }
+
+    @PostMapping("/impersonation-ticket")
+    public Result<UserImpersonationTicketResp> createImpersonationTicket(
+            @RequestBody IdReq req, HttpServletRequest request) throws BizException {
+        return Result.ok(userService.createImpersonationTicket(
+                req.getId(), clientIp(request), request.getHeader("User-Agent")));
+    }
+
+    private String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

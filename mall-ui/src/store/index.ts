@@ -3,11 +3,13 @@ import StorageUtil from '@/utils/storage';
 
 interface State {
   isLoggedIn: boolean;
+  isImpersonated: boolean;
 }
 
 function toState(value: Partial<State> | null): State {
   return {
     isLoggedIn: Boolean(value?.isLoggedIn),
+    isImpersonated: Boolean(value?.isImpersonated),
   };
 }
 
@@ -19,5 +21,8 @@ export const store = {
   state: readonly(state),
   setLoggedIn(status: boolean) {
     state.isLoggedIn = status;
+  },
+  setImpersonated(status: boolean) {
+    state.isImpersonated = status;
   },
 };

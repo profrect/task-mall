@@ -92,6 +92,7 @@ import {
   getLotteryActivities,
   getLotteryRecords,
 } from '@/api/promotion';
+import { rejectIfImpersonated } from '@/utils/impersonation';
 
 const activeTab = ref('activities');
 const loading = ref(false);
@@ -143,6 +144,9 @@ const loadData = async () => {
 };
 
 const handleDraw = async (activityId: number) => {
+  if (rejectIfImpersonated()) {
+    return;
+  }
   drawingId.value = activityId;
   try {
     const record = await drawLottery(activityId);

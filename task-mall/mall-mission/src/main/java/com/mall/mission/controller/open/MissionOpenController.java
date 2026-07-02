@@ -42,11 +42,13 @@ public class MissionOpenController {
 
     @PostMapping("/tasks/{taskId}/claim")
     public Result<MissionUserTaskResp> claim(@PathVariable("taskId") Long taskId) throws BizException {
+        AuthUtils.ensureNotImpersonated();
         return Result.ok(missionService.claim(AuthUtils.currentUserId(), taskId));
     }
 
     @PostMapping("/tasks/submit")
     public Result<MissionUserTaskResp> submit(@RequestBody MissionSubmitDTO dto) throws BizException {
+        AuthUtils.ensureNotImpersonated();
         return Result.ok(missionService.submit(AuthUtils.currentUserId(), dto));
     }
 

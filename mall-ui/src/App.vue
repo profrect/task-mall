@@ -1,4 +1,12 @@
 <template>
+  <van-notice-bar
+    v-if="showImpersonationBanner"
+    class="impersonation-banner"
+    color="#ad6800"
+    background="#fff7e6"
+    left-icon="warning-o"
+    text="当前为后台模拟登录，仅可查看前台页面，资金、任务、抽奖和资料修改等操作已禁用。"
+  />
   <router-view />
   <van-tabbar
     v-model="active"
@@ -16,6 +24,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { tokenStore } from '@/api/http'
+import { store } from '@/store'
+
 const active = ref(0)
+const showImpersonationBanner = computed(() => Boolean(tokenStore.get() && store.state.isImpersonated))
 </script>
+
+<style scoped>
+.impersonation-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+</style>

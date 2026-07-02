@@ -73,6 +73,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '登录', requiresAuth: false },
   },
   {
+    path: '/admin-login',
+    name: 'AdminLogin',
+    component: () => import('@/views/auth/AdminLogin.vue'),
+    meta: { title: '后台模拟登录', requiresAuth: false },
+  },
+  {
     path: '/leaderboard',
     name: 'Leaderboard',
     component: () => import('@/views/Leaderboard.vue'),

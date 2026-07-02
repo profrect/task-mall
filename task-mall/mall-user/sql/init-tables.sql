@@ -137,6 +137,31 @@ CREATE TABLE `invite_commission_record`
     KEY                 `idx_status_time` (`status`, `create_time`)
 ) ENGINE=InnoDB COMMENT='邀请返佣记录表';
 
+CREATE TABLE `user_impersonation_ticket`
+(
+    `id`             bigint       NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `ticket_no`      varchar(64)  NOT NULL COMMENT '模拟登录票据记录号',
+    `ticket_hash`    char(64)     NOT NULL COMMENT '一次性ticket哈希，明文只返回一次',
+    `target_user_id` bigint       NOT NULL COMMENT '被模拟登录的会员user_id',
+    `admin_account`  varchar(64)  NOT NULL COMMENT '发起模拟登录的后台账号',
+    `admin_ip`       varchar(64)           DEFAULT '' COMMENT '后台请求IP',
+    `user_agent`     varchar(512)          DEFAULT '' COMMENT '后台请求User-Agent',
+    `status`         varchar(20)  NOT NULL COMMENT '状态：CREATED/CONSUMED/EXPIRED',
+    `expires_at`     bigint       NOT NULL COMMENT '票据过期时间',
+    `consumed_at`    bigint                DEFAULT NULL COMMENT '票据兑换时间',
+    `fail_reason`    varchar(500)          DEFAULT NULL COMMENT '失败或失效原因',
+    `create_time`    bigint                DEFAULT NULL COMMENT '数据创建时间',
+    `update_time`    bigint                DEFAULT NULL COMMENT '数据修改时间',
+    `creator`        varchar(50)           DEFAULT '' COMMENT '数据创建者',
+    `updater`        varchar(50)           DEFAULT '' COMMENT '数据修改者',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_ticket_no` (`ticket_no`),
+    UNIQUE KEY `uk_ticket_hash` (`ticket_hash`),
+    KEY              `idx_target_time` (`target_user_id`, `create_time`),
+    KEY              `idx_admin_time` (`admin_account`, `create_time`),
+    KEY              `idx_status_expires` (`status`, `expires_at`)
+) ENGINE=InnoDB COMMENT='后台模拟会员登录前台票据审计表';
+
 INSERT INTO `vip_level_config`(`level`, `level_name`, `price`, `rebate_rate`, `daily_tasks`, `benefits`, `sort_order`, `status`, `creator`, `updater`, `create_time`, `update_time`)
 VALUES (0, 'VIP0', 0.000000, 0.0000, 0, '基础会员', 0, 1, '', '', 1782880000000, NULL),
        (1, 'VIP1', 100.000000, 0.0100, 5, '每日任务数 5\n基础返佣比例 1%', 1, 1, '', '', 1782880000000, NULL),

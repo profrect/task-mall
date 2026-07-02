@@ -31,6 +31,7 @@ public class PromotionLotteryOpenController {
 
     @PostMapping("/activities/{activityId}/draw")
     public Result<PromotionLotteryRecordResp> draw(@PathVariable("activityId") Long activityId) throws BizException {
+        AuthUtils.ensureNotImpersonated();
         return Result.ok(promotionLotteryService.draw(AuthUtils.currentUserId(), activityId));
     }
 

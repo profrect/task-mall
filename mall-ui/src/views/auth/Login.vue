@@ -195,6 +195,7 @@ const onLogin = async () => {
     })
     tokenStore.set(accessToken)
     store.setLoggedIn(true)
+    store.setImpersonated(false)
     showSuccessToast('登录成功')
     const redirect = (route.query.redirect as string) || '/wallet'
     router.replace(redirect)

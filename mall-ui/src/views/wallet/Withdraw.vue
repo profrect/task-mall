@@ -81,6 +81,7 @@ import {
   type WalletOverview,
   type WithdrawRecord,
 } from '@/api/wallet'
+import { rejectIfImpersonated } from '@/utils/impersonation'
 
 const overview = ref<WalletOverview>({
   userId: 0,
@@ -115,6 +116,9 @@ async function loadRecords() {
 }
 
 async function submitWithdraw() {
+  if (rejectIfImpersonated()) {
+    return
+  }
   const amount = Number(form.amount)
   if (!Number.isFinite(amount) || amount <= 0) {
     showFailToast('提现金额必须大于 0')

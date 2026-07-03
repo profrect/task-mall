@@ -9,6 +9,10 @@ public class UserResp {
 
     private String userName;
 
+    private String nickname;
+
+    private String email;
+
     private Integer vipLevel;
 
     private String inviteCode;
@@ -16,6 +20,12 @@ public class UserResp {
     private Integer status;
 
     private String parentUserName;
+
+    private Long parentUserId;
+
+    private Long groupId;
+
+    private String groupName;
 
     private Long registerTime;
 }

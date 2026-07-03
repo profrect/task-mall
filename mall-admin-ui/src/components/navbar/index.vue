@@ -12,14 +12,16 @@
           {{ appName }}
         </a-typography-title>
         <icon-menu-fold
-          v-if="!topMenu && appStore.device === 'mobile'"
+          v-if="showMobileMenuButton"
           style="font-size: 22px; cursor: pointer"
           @click="toggleDrawerMenu"
         />
       </a-space>
     </div>
     <div class="center-side">
-      <Menu v-if="topMenu" />
+      <Suspense>
+        <ModuleMenu v-if="moduleMenu" />
+      </Suspense>
     </div>
     <ul class="right-side">
       <li>
@@ -199,7 +201,7 @@
   import { LOCALE_OPTIONS } from '@/locale';
   import useLocale from '@/hooks/locale';
   import useUser from '@/hooks/user';
-  import Menu from '@/components/menu/index.vue';
+  import ModuleMenu from '@/components/menu/module-menu.vue';
   import { useI18n } from 'vue-i18n';
   import { getUserInfo, updatePassword, User } from '@/api/user';
   import { isItem } from '@/store/storage/storage';
@@ -227,7 +229,10 @@
   const theme = computed(() => {
     return appStore.theme;
   });
-  const topMenu = computed(() => appStore.topMenu && appStore.menu);
+  const moduleMenu = computed(() => appStore.menu);
+  const showMobileMenuButton = computed(
+    () => appStore.menu && appStore.device === 'mobile'
+  );
   const isDark = useDark({
     selector: 'body',
     attribute: 'arco-theme',
@@ -369,8 +374,13 @@
   }
 
   .center-side {
-    flex-shrink: 0; /* 禁止中间区域收缩（如果有内容） */
-    white-space: nowrap; /* 禁止中间文本换行 */
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   .right-side {

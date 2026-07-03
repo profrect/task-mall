@@ -17,14 +17,20 @@
     </div>
 
     <van-tabs v-model:active="activeTab" sticky offset-top="46" shrink>
-      <van-tab title="Available" name="available">
+      <van-tab title="可领取" name="available">
         <TaskList status="available" @changed="loadStats" />
       </van-tab>
-      <van-tab title="In Progress" name="in_progress">
+      <van-tab title="进行中" name="in_progress">
         <TaskList status="in_progress" @changed="loadStats" />
       </van-tab>
-      <van-tab title="Completed" name="completed">
+      <van-tab title="审核中" name="submitted">
+        <TaskList status="submitted" @changed="loadStats" />
+      </van-tab>
+      <van-tab title="已完成" name="completed">
         <TaskList status="completed" @changed="loadStats" />
+      </van-tab>
+      <van-tab title="已驳回" name="rejected">
+        <TaskList status="rejected" @changed="loadStats" />
       </van-tab>
     </van-tabs>
   </div>

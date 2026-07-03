@@ -32,11 +32,14 @@ public class RechargeQueryServiceImpl implements RechargeQueryService {
     private ServiceEndpointProperties serviceEndpoints;
 
     @Override
-    public List<RechargeOrderResp> list(String status, Integer limit) throws BizException {
+    public List<RechargeOrderResp> list(String status, Long userId, Integer limit) throws BizException {
         StringBuilder url = new StringBuilder(walletUrl(PATH_LIST))
                 .append("?limit=").append(limit == null || limit <= 0 ? DEFAULT_LIMIT : limit);
         if (StringUtils.hasText(status)) {
             url.append("&status=").append(status.trim());
+        }
+        if (userId != null && userId > 0) {
+            url.append("&userId=").append(userId);
         }
         return apiRestClient.get(url.toString(), new TypeReference<List<RechargeOrderResp>>() {});
     }

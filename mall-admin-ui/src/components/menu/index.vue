@@ -2,7 +2,7 @@
   <a-menu
     v-model:collapsed="collapsed"
     v-model:open-keys="openKeys"
-    :mode="topMenu ? 'horizontal' : 'vertical'"
+    mode="vertical"
     :auto-open="false"
     :selected-keys="selectedKey"
     :auto-open-selected="true"
@@ -10,20 +10,35 @@
     style="height: 100%; width: 100%"
     :on-collapse="setCollapse"
   >
-    <menu-item :menu-tree="menuTree" @handle-update-key="handleUpdateKey" />
+    <menu-item :menu-tree="currentMenuTree" @handle-update-key="handleUpdateKey" />
   </a-menu>
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, shallowRef, onMounted } from 'vue';
-  import { RouteLocationNormalizedGeneric, RouteRecordRaw } from 'vue-router';
+  import { ref, computed } from 'vue';
+  import {
+    RouteLocationNormalizedGeneric,
+    RouteRecordRaw,
+    useRoute,
+  } from 'vue-router';
   import { useAppStore } from '@/store';
   import { listenerRouteChange } from '@/utils/route-listener';
   import MenuItem from '@/components/menu/menuItem.vue';
   import useMenuTree from './use-menu-tree';
+  import { getMenuModuleRoutes, resolveMenuModuleKey } from './menu-modules';
 
   const appStore = useAppStore();
+  const route = useRoute();
   const { menuTree } = await useMenuTree();
+  const currentRouteName = computed(() =>
+    String(route.meta.activeMenu || route.name || '')
+  );
+  const activeModuleKey = computed(() =>
+    resolveMenuModuleKey(menuTree.value, currentRouteName.value)
+  );
+  const currentMenuTree = computed(() =>
+    getMenuModuleRoutes(menuTree.value, activeModuleKey.value)
+  );
   // 简化collapsed计算逻辑，减少computed触发次数
   const collapsed = computed({
     get() {
@@ -36,7 +51,6 @@
     },
   });
 
-  const topMenu = computed(() => appStore.topMenu);
   const openKeys = ref<string[]>([]);
   const selectedKey = ref<string[]>([]);
 
@@ -68,9 +82,9 @@
       }
     };
     // menuTree未加载完成时不遍历
-    if (menuTree.value.length) {
+    if (currentMenuTree.value.length) {
       // eslint-disable-next-line no-restricted-syntax
-      for (const element of menuTree.value) {
+      for (const element of currentMenuTree.value) {
         const el = element;
         if (isFind) break;
         backtrack(el, [el.name as string]);
@@ -98,7 +112,8 @@
   const handleRouteChange = (newRoute: RouteLocationNormalizedGeneric) => {
     const { activeMenu, hideInMenu } = newRoute.meta;
     if (!hideInMenu || activeMenu) {
-      const targetKey = activeMenu || (newRoute.name as string);
+      const targetKey = String(activeMenu || newRoute.name || '');
+      if (!targetKey) return;
       const menuOpenKeys = findMenuOpenKeys(targetKey);
 
       // 优化：避免不必要的数组操作（原Set逻辑可简化）
@@ -106,7 +121,7 @@
         openKeys.value = [...menuOpenKeys];
       }
       const newSelectedKey = [
-        activeMenu || menuOpenKeys[menuOpenKeys.length - 1],
+        String(activeMenu || menuOpenKeys[menuOpenKeys.length - 1] || targetKey),
       ];
       if (
         JSON.stringify(selectedKey.value) !== JSON.stringify(newSelectedKey)

@@ -42,6 +42,8 @@ public enum WalletRespCodeEnum implements RespCode {
     TRANSFER_SELF_NOT_ALLOWED(30032, "不能向自己转账"),
     TRANSFER_RECEIVER_NOT_FOUND(30033, "收款用户不存在：%s"),
     TRANSFER_RECEIVER_NOT_AVAILABLE(30034, "收款用户不可用：%s"),
+    MANUAL_RECHARGE_REFERENCE_DUPLICATE(30035, "人工充值补单凭证已存在：%s"),
+    MANUAL_RECHARGE_INVALID(30036, "人工充值补单请求非法：%s"),
     ;
 
     private final Integer code;

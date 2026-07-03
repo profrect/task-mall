@@ -37,10 +37,10 @@
                 block
                 round
                 :loading="drawingId === item.activity.id"
-                :disabled="item.todayRemainCount === 0"
+                :disabled="readonlyMode || item.todayRemainCount === 0"
                 @click="handleDraw(item.activity.id)"
               >
-                立即抽奖
+                {{ readonlyMode ? '模拟登录只读' : '立即抽奖' }}
               </van-button>
             </div>
           </div>
@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { showDialog, showSuccessToast } from 'vant';
 import {
   PromotionLotteryDetail,
@@ -92,7 +92,7 @@ import {
   getLotteryActivities,
   getLotteryRecords,
 } from '@/api/promotion';
-import { rejectIfImpersonated } from '@/utils/impersonation';
+import { isImpersonatedSession, rejectIfImpersonated } from '@/utils/impersonation';
 
 const activeTab = ref('activities');
 const loading = ref(false);
@@ -102,6 +102,7 @@ const recordRefreshing = ref(false);
 const drawingId = ref<number>();
 const activities = ref<PromotionLotteryDetail[]>([]);
 const records = ref<PromotionLotteryRecord[]>([]);
+const readonlyMode = computed(() => isImpersonatedSession());
 
 const moneyText = (value?: number) => Number(value || 0).toFixed(6);
 

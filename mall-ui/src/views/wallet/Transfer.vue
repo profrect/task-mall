@@ -11,6 +11,13 @@
     </div>
 
     <van-form class="form-card" @submit="submitTransfer">
+      <van-notice-bar
+        v-if="readonlyMode"
+        color="#ad6800"
+        background="#fff7e6"
+        left-icon="warning-o"
+        text="当前为后台模拟登录，仅可查看转账记录，不能提交转账。"
+      />
       <van-field
         v-model="form.toUserId"
         name="toUserId"
@@ -18,6 +25,7 @@
         placeholder="请输入收款用户ID"
         type="digit"
         clearable
+        :readonly="readonlyMode"
         :rules="[{ required: true, message: '请输入收款用户ID' }]"
       />
       <van-field
@@ -27,6 +35,7 @@
         placeholder="请输入转账金额"
         type="number"
         clearable
+        :readonly="readonlyMode"
         :rules="[{ required: true, message: '请输入转账金额' }]"
       />
       <van-field
@@ -36,13 +45,14 @@
         placeholder="选填，最多 100 字"
         clearable
         maxlength="100"
+        :readonly="readonlyMode"
       />
       <div class="tip-box">
         转账会立即完成：系统同事务扣减转出方、增加收款方，并生成双方钱包流水。请确认收款用户ID无误。
       </div>
       <div class="submit-wrap">
-        <van-button round block type="primary" native-type="submit" :loading="submitting">
-          确认转账
+        <van-button round block type="primary" native-type="submit" :loading="submitting" :disabled="readonlyMode">
+          {{ readonlyMode ? '模拟登录只读' : '确认转账' }}
         </van-button>
       </div>
     </van-form>
@@ -85,7 +95,7 @@ import {
   type TransferRecord,
   type WalletOverview,
 } from '@/api/wallet'
-import { rejectIfImpersonated } from '@/utils/impersonation'
+import { isImpersonatedSession, rejectIfImpersonated } from '@/utils/impersonation'
 
 const overview = ref<WalletOverview>({
   userId: 0,
@@ -107,6 +117,7 @@ const loadingRec = ref(false)
 const refreshing = ref(false)
 
 const currentUserId = computed(() => overview.value.userId)
+const readonlyMode = computed(() => isImpersonatedSession())
 
 async function loadOverview() {
   overview.value = await getOverview()

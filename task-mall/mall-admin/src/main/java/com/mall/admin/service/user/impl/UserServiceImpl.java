@@ -7,11 +7,19 @@ import com.mall.admin.model.vo.UserInfoVO;
 import com.mall.admin.service.user.UserService;
 import com.mall.common.core.context.UserContext;
 import com.mall.common.core.exception.BizException;
+import com.mall.common.model.dto.req.IdReq;
+import com.mall.common.model.dto.req.UserAdminSaveReq;
+import com.mall.common.model.dto.req.UserBatchStatusUpdateReq;
+import com.mall.common.model.dto.req.UserGroupAssignReq;
+import com.mall.common.model.dto.req.UserGroupReq;
 import com.mall.common.model.dto.req.UserImpersonationTicketReq;
+import com.mall.common.model.dto.req.UserLineChangeReq;
 import com.mall.common.model.dto.req.UserReq;
 import com.mall.common.model.dto.req.UserStatusUpdateReq;
 import com.mall.common.model.dto.req.WalletAccountBatchReq;
+import com.mall.common.model.dto.resp.UserGroupResp;
 import com.mall.common.model.dto.resp.UserImpersonationTicketResp;
+import com.mall.common.model.dto.resp.UserLineageResp;
 import com.mall.common.model.dto.resp.UserResp;
 import com.mall.common.model.dto.resp.WalletAccountResp;
 import com.mall.common.web.rest.ApiRestClient;
@@ -36,8 +44,18 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private static final String USER_PAGE_PATH = "/api/provider/user/user-page";
+    private static final String USER_DETAIL_PATH = "/api/provider/user/detail";
+    private static final String USER_SAVE_PATH = "/api/provider/user/admin-save";
     private static final String USER_STATUS_PATH = "/api/provider/user/status";
+    private static final String USER_BATCH_STATUS_PATH = "/api/provider/user/batch-status";
+    private static final String USER_LOGOUT_PATH = "/api/provider/user/logout";
     private static final String USER_IMPERSONATION_TICKET_PATH = "/api/provider/user/impersonation-ticket";
+    private static final String USER_LINEAGE_PATH = "/api/provider/user/lineage";
+    private static final String USER_LINEAGE_CHANGE_PATH = "/api/provider/user/lineage/change";
+    private static final String USER_GROUP_LIST_PATH = "/api/provider/user/group/list";
+    private static final String USER_GROUP_SAVE_PATH = "/api/provider/user/group/save";
+    private static final String USER_GROUP_DELETE_PATH = "/api/provider/user/group/delete";
+    private static final String USER_GROUP_ASSIGN_PATH = "/api/provider/user/group/assign";
     private static final String WALLET_BATCH_PATH = "/api/provider/wallet/account/batch";
     private static final String DEFAULT_CURRENCY = "USDT";
 
@@ -52,6 +70,14 @@ public class UserServiceImpl implements UserService {
         UserReq userReq = new UserReq();
         userReq.setPageNumber(dto.getPageNumber());
         userReq.setPageSize(dto.getPageSize());
+        userReq.setUserId(dto.getUserId());
+        userReq.setUserName(dto.getUserName());
+        userReq.setInviteCode(dto.getInviteCode());
+        userReq.setVipLevel(dto.getVipLevel());
+        userReq.setStatus(dto.getStatus());
+        userReq.setGroupId(dto.getGroupId());
+        userReq.setRegisterStartTime(dto.getRegisterStartTime());
+        userReq.setRegisterEndTime(dto.getRegisterEndTime());
 
         Page<UserResp> userPage = apiRestClient.post(userUrl(USER_PAGE_PATH), userReq,
                 new TypeReference<Page<UserResp>>() {});
@@ -68,11 +94,88 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserInfoVO userDetail(Long userId) throws BizException {
+        IdReq req = new IdReq();
+        req.setId(userId);
+        UserResp user = apiRestClient.post(userUrl(USER_DETAIL_PATH), req, UserResp.class);
+        Map<Long, WalletAccountResp> walletMap = user == null ? Map.of() : loadWalletMap(List.of(user));
+        return user == null ? null : toVo(user, walletMap.get(user.getUserId()));
+    }
+
+    @Override
+    public UserInfoVO save(UserAdminSaveReq req) throws BizException {
+        UserResp user = apiRestClient.post(userUrl(USER_SAVE_PATH), req, UserResp.class);
+        Map<Long, WalletAccountResp> walletMap = user == null ? Map.of() : loadWalletMap(List.of(user));
+        return user == null ? null : toVo(user, walletMap.get(user.getUserId()));
+    }
+
+    @Override
+    public List<UserInfoVO> export(UserInfoDTO dto) throws BizException {
+        UserInfoDTO exportReq = dto == null ? new UserInfoDTO() : dto;
+        exportReq.setPageNumber(1);
+        exportReq.setPageSize(5000);
+        return userPage(exportReq).getRecords();
+    }
+
+    @Override
+    public List<UserGroupResp> groupList(Integer status) throws BizException {
+        String url = status == null
+                ? userUrl(USER_GROUP_LIST_PATH)
+                : userUrl(USER_GROUP_LIST_PATH) + "?status=" + status;
+        List<UserGroupResp> groups = apiRestClient.get(url, new TypeReference<List<UserGroupResp>>() {});
+        return groups == null ? List.of() : groups;
+    }
+
+    @Override
+    public UserGroupResp saveGroup(UserGroupReq req) throws BizException {
+        return apiRestClient.post(userUrl(USER_GROUP_SAVE_PATH), req, UserGroupResp.class);
+    }
+
+    @Override
+    public void deleteGroup(Long id) throws BizException {
+        IdReq req = new IdReq();
+        req.setId(id);
+        apiRestClient.post(userUrl(USER_GROUP_DELETE_PATH), req, Void.class);
+    }
+
+    @Override
+    public void assignGroup(UserGroupAssignReq req) throws BizException {
+        apiRestClient.post(userUrl(USER_GROUP_ASSIGN_PATH), req, Void.class);
+    }
+
+    @Override
+    public UserLineageResp lineage(Long userId) throws BizException {
+        IdReq req = new IdReq();
+        req.setId(userId);
+        return apiRestClient.post(userUrl(USER_LINEAGE_PATH), req, UserLineageResp.class);
+    }
+
+    @Override
+    public void changeParent(UserLineChangeReq req) throws BizException {
+        apiRestClient.post(userUrl(USER_LINEAGE_CHANGE_PATH), req, Void.class);
+    }
+
+    @Override
     public void updateStatus(Long userId, Integer status) throws BizException {
         UserStatusUpdateReq req = new UserStatusUpdateReq();
         req.setUserId(userId);
         req.setStatus(status);
         apiRestClient.post(userUrl(USER_STATUS_PATH), req, Void.class);
+    }
+
+    @Override
+    public void updateStatusBatch(List<Long> userIds, Integer status) throws BizException {
+        UserBatchStatusUpdateReq req = new UserBatchStatusUpdateReq();
+        req.setUserIds(userIds);
+        req.setStatus(status);
+        apiRestClient.post(userUrl(USER_BATCH_STATUS_PATH), req, Void.class);
+    }
+
+    @Override
+    public void logout(Long userId) throws BizException {
+        IdReq req = new IdReq();
+        req.setId(userId);
+        apiRestClient.post(userUrl(USER_LOGOUT_PATH), req, Void.class);
     }
 
     @Override
@@ -109,10 +212,15 @@ public class UserServiceImpl implements UserService {
         UserInfoVO vo = new UserInfoVO();
         vo.setUserId(user.getUserId());
         vo.setUserName(user.getUserName());
+        vo.setNickname(user.getNickname());
+        vo.setEmail(user.getEmail());
         vo.setVipLevel(user.getVipLevel());
         vo.setInviteCode(user.getInviteCode());
         vo.setStatus(user.getStatus());
         vo.setParentUserName(user.getParentUserName());
+        vo.setParentUserId(user.getParentUserId());
+        vo.setGroupId(user.getGroupId());
+        vo.setGroupName(user.getGroupName());
         vo.setRegisterTime(user.getRegisterTime());
         vo.setAvailableAmt(wallet == null ? BigDecimal.ZERO : wallet.getAvailBalance());
         vo.setFreezeAmt(wallet == null ? BigDecimal.ZERO : wallet.getFrozenBalance());

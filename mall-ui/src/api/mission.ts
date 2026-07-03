@@ -57,6 +57,8 @@ export interface MissionInvestProject {
   riskLevel: string;
 }
 
+export type MissionTaskTabStatus = 'available' | 'in_progress' | 'submitted' | 'completed' | 'rejected';
+
 const BASE = '/api/open/mission';
 
 export function getMissionStats(): Promise<MissionTaskStats> {

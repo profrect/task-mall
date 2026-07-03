@@ -150,6 +150,42 @@ CREATE TABLE `admin_system_param`
     INDEX `idx_status_sort`(`status`, `sort_order`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 COMMENT = '后台系统参数表';
 
+CREATE TABLE `admin_bot_config`
+(
+    `id`          bigint       NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `bot_name`    varchar(64)  NOT NULL COMMENT '机器人名称',
+    `bot_token`   varchar(255) NOT NULL COMMENT '机器人Token',
+    `webhook_url` varchar(255) NULL DEFAULT '' COMMENT 'Webhook地址',
+    `description` varchar(255) NULL DEFAULT '' COMMENT '说明',
+    `sort_order`  int          NOT NULL DEFAULT 0 COMMENT '排序，越小越靠前',
+    `status`      tinyint      NOT NULL DEFAULT 1 COMMENT '状态：1-启用，0-停用',
+    `creator`     varchar(50)  NULL DEFAULT '' COMMENT '添加人',
+    `updater`     varchar(50)  NULL DEFAULT '' COMMENT '最后修改人',
+    `create_time` bigint       NULL DEFAULT NULL COMMENT '数据创建时间（UTC毫秒）',
+    `update_time` bigint       NULL DEFAULT NULL COMMENT '数据最后修改时间（UTC毫秒）',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE INDEX `uk_bot_name`(`bot_name`) USING BTREE,
+    INDEX `idx_status_sort`(`status`, `sort_order`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 COMMENT = '后台机器人配置表';
+
+CREATE TABLE `admin_bot_auto_reply`
+(
+    `id`            bigint       NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `bot_id`        bigint       NOT NULL COMMENT '机器人ID',
+    `keyword`       varchar(128) NOT NULL COMMENT '关键词',
+    `reply_content` text         NOT NULL COMMENT '回复内容',
+    `match_type`    tinyint      NOT NULL DEFAULT 1 COMMENT '匹配方式：1-包含，2-完全匹配',
+    `sort_order`    int          NOT NULL DEFAULT 0 COMMENT '排序，越小越靠前',
+    `status`        tinyint      NOT NULL DEFAULT 1 COMMENT '状态：1-启用，0-停用',
+    `creator`       varchar(50)  NULL DEFAULT '' COMMENT '添加人',
+    `updater`       varchar(50)  NULL DEFAULT '' COMMENT '最后修改人',
+    `create_time`   bigint       NULL DEFAULT NULL COMMENT '数据创建时间（UTC毫秒）',
+    `update_time`   bigint       NULL DEFAULT NULL COMMENT '数据最后修改时间（UTC毫秒）',
+    PRIMARY KEY (`id`) USING BTREE,
+    INDEX `idx_bot_status_sort`(`bot_id`, `status`, `sort_order`) USING BTREE,
+    INDEX `idx_keyword`(`keyword`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 COMMENT = '后台机器人自动回复表';
+
 CREATE TABLE `admin_operation_log`
 (
     `id`            bigint       NOT NULL AUTO_INCREMENT COMMENT 'ID',

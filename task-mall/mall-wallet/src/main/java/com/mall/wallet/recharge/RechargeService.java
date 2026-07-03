@@ -1,6 +1,8 @@
 package com.mall.wallet.recharge;
 
 import com.mall.common.core.exception.BizException;
+import com.mall.common.core.util.Preconditions;
+import com.mall.common.model.dto.req.RechargeManualReq;
 import com.mall.wallet.chain.ChainCode;
 import com.mall.wallet.chain.adapter.DepositEvent;
 import com.mall.wallet.chain.address.DepositAddressService;
@@ -12,7 +14,10 @@ import com.mall.wallet.chain.model.entity.ChainDepositEvent;
 import com.mall.wallet.chain.model.entity.CoinConfig;
 import com.mall.wallet.chain.model.entity.UserDepositAddress;
 import com.mall.wallet.enums.WalletBizType;
+import com.mall.wallet.enums.WalletRespCodeEnum;
 import com.mall.wallet.model.LedgerEvent;
+import com.mall.wallet.payment.mapper.PaymentOrderMapper;
+import com.mall.wallet.payment.model.entity.PaymentOrder;
 import com.mall.wallet.recharge.model.entity.WalletRechargeOrder;
 import com.mall.wallet.recharge.mapper.WalletRechargeOrderMapper;
 import com.mall.wallet.service.WalletAccountService;
@@ -46,12 +51,25 @@ public class RechargeService {
     private static final String STATUS_SEEN = "SEEN";
     private static final String STATUS_CONFIRMING = "CONFIRMING";
     private static final String STATUS_CREDITED = "CREDITED";
+    private static final String MANUAL_CHAIN_CODE = "MANUAL";
+    private static final String MANUAL_ADDRESS = "MANUAL_RECHARGE";
+    private static final String MANUAL_TX_PREFIX = "manual:";
+    private static final String PAYMENT_STATUS_PAID = "PAID";
+    private static final String PAYMENT_CHANNEL_MANUAL = "MANUAL";
+    private static final String DEFAULT_COIN = "USDT";
+    private static final int MAX_REFERENCE_LENGTH = 64;
+    private static final int MAX_REMARK_LENGTH = 512;
+    private static final int MAX_OPERATOR_LENGTH = 50;
+    private static final int CURRENCY_SCALE = 6;
 
     @Resource
     private ChainDepositEventMapper eventMapper;
 
     @Resource
     private WalletRechargeOrderMapper orderMapper;
+
+    @Resource
+    private PaymentOrderMapper paymentOrderMapper;
 
     @Resource
     private ChainConfigMapper chainConfigMapper;
@@ -144,13 +162,52 @@ public class RechargeService {
      * 管理端充值订单查询：status 留空查全部，否则按状态过滤；按 id 倒序（最新在前）并限量返回。
      * 充值订单主键只增不改，id 倒序等价于创建时间倒序，避免额外依赖 createTime 索引。
      */
-    public List<WalletRechargeOrder> listForAdmin(String status, int limit) {
+    public List<WalletRechargeOrder> listForAdmin(String status, Long userId, int limit) {
         QueryWrapper query = QueryWrapper.create().from(WalletRechargeOrder.class);
         if (status != null && !status.isBlank()) {
             query.eq(WalletRechargeOrder::getStatus, status.trim().toUpperCase(Locale.ROOT));
         }
+        if (userId != null && userId > 0) {
+            query.eq(WalletRechargeOrder::getUserId, userId);
+        }
         query.orderBy(WalletRechargeOrder::getId, false).limit(limit);
         return orderMapper.selectListByQuery(query);
+    }
+
+    /**
+     * 管理端人工充值补单。
+     *
+     * 资金边界：补单只创建 MANUAL 来源的充值订单和支付审计，再通过账务内核 applyLedger 入账；
+     * 不伪造链上事件，也不直接修改钱包余额。referenceNo 非空时作为人工凭证幂等键。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public WalletRechargeOrder manualCredit(RechargeManualReq req) throws BizException {
+        validateManualReq(req);
+        String coin = normalizeManualCoin(req.getCoin());
+        String referenceNo = trim(req.getReferenceNo(), MAX_REFERENCE_LENGTH);
+        String orderNo = nextOrderNo();
+        String txHash = manualTxHash(referenceNo, orderNo);
+
+        WalletRechargeOrder existing = findManualOrder(txHash);
+        if (existing != null) {
+            assertSameManualOrder(existing, req, coin, referenceNo);
+            return existing;
+        }
+
+        long now = System.currentTimeMillis();
+        WalletRechargeOrder order = buildManualOrder(req, coin, referenceNo, orderNo, txHash, now);
+        orderMapper.insert(order);
+        paymentOrderMapper.insert(buildManualPayment(req, coin, referenceNo, orderNo, txHash, now));
+
+        walletAccountService.getOrCreate(req.getUserId(), coin);
+        walletAccountService.applyLedger(new LedgerEvent(
+                req.getUserId(),
+                coin,
+                WalletBizType.RECHARGE,
+                MANUAL_TX_PREFIX + orderNo,
+                req.getAmount(),
+                manualRemark(req, referenceNo)));
+        return order;
     }
 
     private ChainDepositEvent upsertEvent(ChainCode chainCode, DepositEvent ev) {
@@ -199,6 +256,104 @@ public class RechargeService {
         return order;
     }
 
+    private void validateManualReq(RechargeManualReq req) throws BizException {
+        Preconditions.notNull(req, WalletRespCodeEnum.MANUAL_RECHARGE_INVALID, "请求为空");
+        Preconditions.needTrue(req.getUserId() != null && req.getUserId() > 0,
+                WalletRespCodeEnum.MANUAL_RECHARGE_INVALID, "会员 UID 为空");
+        Preconditions.needTrue(req.getAmount() != null && req.getAmount().signum() > 0,
+                WalletRespCodeEnum.INVALID_AMOUNT, CURRENCY_SCALE);
+        Preconditions.needTrue(req.getAmount().scale() <= CURRENCY_SCALE,
+                WalletRespCodeEnum.INVALID_AMOUNT, CURRENCY_SCALE);
+    }
+
+    private String normalizeManualCoin(String coin) throws BizException {
+        String normalized = coin == null || coin.isBlank() ? DEFAULT_COIN : coin.trim().toUpperCase(Locale.ROOT);
+        Preconditions.needTrue(DEFAULT_COIN.equals(normalized), WalletRespCodeEnum.COIN_CONFIG_MISSING, normalized);
+        return normalized;
+    }
+
+    private String manualTxHash(String referenceNo, String orderNo) {
+        return MANUAL_TX_PREFIX + (referenceNo == null ? orderNo : referenceNo);
+    }
+
+    private WalletRechargeOrder findManualOrder(String txHash) {
+        return orderMapper.selectOneByQuery(QueryWrapper.create()
+                .from(WalletRechargeOrder.class)
+                .eq(WalletRechargeOrder::getChainCode, MANUAL_CHAIN_CODE)
+                .eq(WalletRechargeOrder::getTxHash, txHash)
+                .eq(WalletRechargeOrder::getLogIndex, 0));
+    }
+
+    private void assertSameManualOrder(WalletRechargeOrder existing, RechargeManualReq req, String coin, String referenceNo)
+            throws BizException {
+        boolean sameOrder = existing.getUserId().equals(req.getUserId())
+                && existing.getCoin().equals(coin)
+                && existing.getAmount().compareTo(req.getAmount()) == 0;
+        Preconditions.needTrue(sameOrder, WalletRespCodeEnum.MANUAL_RECHARGE_REFERENCE_DUPLICATE, referenceNo);
+    }
+
+    private WalletRechargeOrder buildManualOrder(RechargeManualReq req, String coin, String referenceNo,
+                                                 String orderNo, String txHash, long now) {
+        WalletRechargeOrder order = new WalletRechargeOrder();
+        order.setOrderNo(orderNo);
+        order.setUserId(req.getUserId());
+        order.setChainCode(MANUAL_CHAIN_CODE);
+        order.setCoin(coin);
+        order.setAmount(req.getAmount());
+        order.setFromAddress(trim(req.getOperator(), MAX_OPERATOR_LENGTH));
+        order.setToAddress(MANUAL_ADDRESS);
+        order.setTxHash(txHash);
+        order.setLogIndex(0);
+        order.setConfirmations(0);
+        order.setStatus(STATUS_CREDITED);
+        order.setCreditedAt(now);
+        return order;
+    }
+
+    private PaymentOrder buildManualPayment(RechargeManualReq req, String coin, String referenceNo,
+                                            String orderNo, String txHash, long now) {
+        PaymentOrder payment = new PaymentOrder();
+        payment.setOrderNo(nextPaymentNo());
+        payment.setUserId(req.getUserId());
+        payment.setBusinessType(WalletBizType.RECHARGE.name());
+        payment.setBusinessOrderNo(orderNo);
+        payment.setChannelCode(PAYMENT_CHANNEL_MANUAL);
+        payment.setChannelOrderNo(referenceNo == null ? orderNo : referenceNo);
+        payment.setCurrency(coin);
+        payment.setAmount(req.getAmount());
+        payment.setStatus(PAYMENT_STATUS_PAID);
+        payment.setPayAddress(MANUAL_ADDRESS);
+        payment.setPayerAddress(trim(req.getOperator(), MAX_OPERATOR_LENGTH));
+        payment.setTxHash(txHash);
+        payment.setAuditRemark(manualRemark(req, referenceNo));
+        payment.setPaidAt(now);
+        return payment;
+    }
+
+    private String manualRemark(RechargeManualReq req, String referenceNo) {
+        String operator = trim(req.getOperator(), MAX_OPERATOR_LENGTH);
+        String remark = trim(req.getRemark(), MAX_REMARK_LENGTH);
+        StringBuilder builder = new StringBuilder("人工充值补单");
+        if (referenceNo != null) {
+            builder.append("，凭证：").append(referenceNo);
+        }
+        if (operator != null) {
+            builder.append("，操作人：").append(operator);
+        }
+        if (remark != null) {
+            builder.append("，备注：").append(remark);
+        }
+        return trim(builder.toString(), MAX_REMARK_LENGTH);
+    }
+
+    private String trim(String value, int maxLength) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.length() <= maxLength ? trimmed : trimmed.substring(0, maxLength);
+    }
+
     private CoinConfig findCoin(ChainCode chainCode, String contractAddress) {
         if (contractAddress == null || contractAddress.isBlank()) {
             return null;
@@ -238,5 +393,9 @@ public class RechargeService {
 
     private String nextOrderNo() {
         return "R" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private String nextPaymentNo() {
+        return "P" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

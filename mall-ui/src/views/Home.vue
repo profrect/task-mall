@@ -37,13 +37,46 @@
       :text="noticeBarText"
     />
 
-    <!-- 4. 任务区块：mall-mission 尚无真实任务源，不展示假任务。 -->
-    <div class="section-title">{{ $t('home.featuredTasks') }}</div>
-    <van-empty class="empty-section" description="任务模块暂未开放" />
+    <!-- 4. 快捷入口：已有真实页面优先，缺接口页面落到明确状态页。 -->
+    <div class="quick-grid">
+      <div v-for="item in quickLinks" :key="item.path" class="quick-item" @click="$router.push(item.path)">
+        <div class="quick-icon" :class="item.tone">
+          <van-icon :name="item.icon" />
+        </div>
+        <span>{{ item.label }}</span>
+      </div>
+    </div>
 
-    <!-- 5. VIP等级：后台 VIP 配置 provider 未落地，不展示假权益。 -->
-    <div class="section-title">{{ $t('home.vipLevels') }}</div>
-    <van-empty class="empty-section" description="VIP 配置暂未开放" />
+    <div class="section-title">任务预览</div>
+    <div class="preview-section">
+      <van-skeleton v-if="previewLoading" title :row="3" />
+      <van-empty v-else-if="!hasToken" class="empty-section" description="登录后查看可领取任务" />
+      <van-empty v-else-if="!taskPreview.length" class="empty-section" description="暂无可领取任务" />
+      <div v-else class="preview-list">
+        <div v-for="task in taskPreview" :key="task.taskId" class="preview-card" @click="$router.push('/tasks')">
+          <div class="preview-title">{{ task.title }}</div>
+          <div class="preview-desc">{{ task.description || task.taskCode }}</div>
+          <div class="preview-reward">+{{ moneyText(task.rewardAmount) }} {{ task.currency }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">VIP 等级</div>
+    <div class="preview-section">
+      <van-empty v-if="!hasToken" class="empty-section" description="登录后查看 VIP 权益" />
+      <van-empty v-else-if="!vipLevels.length" class="empty-section" description="暂无可用 VIP 配置" />
+      <div v-else class="vip-preview">
+        <div v-for="vip in vipPreview" :key="vip.level" class="vip-card" @click="$router.push('/profile')">
+          <div>
+            <div class="preview-title">{{ vip.levelName }}</div>
+            <div class="preview-desc">每日任务 {{ vip.dailyTasks }} · 返佣 {{ rateText(vip.rebateRate) }}</div>
+          </div>
+          <van-tag :type="vip.level === currentVipLevel ? 'warning' : 'primary'">
+            {{ vip.level === currentVipLevel ? '当前' : `${vip.price} USDT` }}
+          </van-tag>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -52,10 +85,11 @@ import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { ContentNotice } from '@/api/content'
 import { getNotices } from '@/api/content'
-// import { useUserStore } from '@/stores/user' // 复用已保存的用户状态
+import { tokenStore } from '@/api/http'
+import { getMissionTasks, type MissionTaskItem } from '@/api/mission'
+import { getVipLevelOverview, type VipLevelConfig } from '@/api/user'
 
 const { locale } = useI18n()
-// const userStore = useUserStore()
 
 // 1. 语言切换
 const currentLang = ref(locale.value)
@@ -72,8 +106,28 @@ const onLangChange = (val: string) => {
 // 2. 公告弹框与通知栏：后台内容配置是唯一来源，只展示已启用公告。
 const showAnnouncement = ref(false)
 const notices = ref<ContentNotice[]>([])
+const taskPreview = ref<MissionTaskItem[]>([])
+const vipLevels = ref<VipLevelConfig[]>([])
+const currentVipLevel = ref(0)
+const previewLoading = ref(false)
+const hasToken = computed(() => Boolean(tokenStore.get()))
 const activeNotice = computed(() => notices.value[0])
 const noticeBarText = computed(() => activeNotice.value?.summary || activeNotice.value?.title || '')
+const vipPreview = computed(() => vipLevels.value.slice(0, 3))
+
+const quickLinks = [
+  { label: '账户', path: '/account', icon: 'user-o', tone: 'blue' },
+  { label: '充值', path: '/account/recharge', icon: 'plus', tone: 'green' },
+  { label: '提现', path: '/account/withDraw', icon: 'minus', tone: 'orange' },
+  { label: '邀请', path: '/invite', icon: 'friends-o', tone: 'purple' },
+  { label: '收益', path: '/income', icon: 'gold-coin-o', tone: 'green' },
+  { label: '公告', path: '/notice', icon: 'volume-o', tone: 'blue' },
+  { label: '优惠券', path: '/coupon', icon: 'coupon-o', tone: 'orange' },
+  { label: '客服', path: '/service', icon: 'service-o', tone: 'purple' },
+]
+
+const moneyText = (value?: number) => Number(value || 0).toFixed(6)
+const rateText = (value?: number) => `${Number(value || 0).toFixed(2)}%`
 
 const loadNotices = async (languageCode = currentLang.value) => {
   try {
@@ -85,8 +139,25 @@ const loadNotices = async (languageCode = currentLang.value) => {
   }
 }
 
+const loadPreview = async () => {
+  if (!hasToken.value) return
+  previewLoading.value = true
+  try {
+    const [tasks, vip] = await Promise.all([
+      getMissionTasks('available', 3),
+      getVipLevelOverview(),
+    ])
+    taskPreview.value = tasks || []
+    vipLevels.value = vip.levels || []
+    currentVipLevel.value = Number(vip.currentLevel || 0)
+  } finally {
+    previewLoading.value = false
+  }
+}
+
 onMounted(() => {
   loadNotices()
+  loadPreview()
 })
 
 </script>
@@ -183,7 +254,88 @@ onMounted(() => {
   }
 }
 
-/* 4. 精选任务区块 */
+/* 快捷入口与真实数据预览 */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px 8px;
+  background: #fff;
+  border-radius: 12px;
+}
+.quick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #323233;
+}
+.quick-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 19px;
+}
+.quick-icon.blue {
+  background: #1989fa;
+}
+.quick-icon.green {
+  background: #07c160;
+}
+.quick-icon.orange {
+  background: #ff976a;
+}
+.quick-icon.purple {
+  background: #7e57c2;
+}
+.preview-section {
+  min-height: 92px;
+}
+.preview-list,
+.vip-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.preview-card,
+.vip-card {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff;
+}
+.vip-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.preview-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #323233;
+}
+.preview-desc {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #969799;
+}
+.preview-reward {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff976a;
+}
+.empty-section {
+  background: #fff;
+  border-radius: 12px;
+}
 .section-title {
   font-size: 16px;
   font-weight: 600;

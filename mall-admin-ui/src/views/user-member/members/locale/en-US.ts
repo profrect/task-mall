@@ -1,5 +1,16 @@
 export default {
   'menu.user-member':'Member Management',
   'menu.member-list':'Member List',
+  'menu.user-member.member-groups': 'Group Settings',
+  'menu.user-member.member-log': 'Member Logs',
+  'menu.user-member.member-flow': 'Member Flows',
+  'menu.user-member.site-message': 'Site Messages',
+  'menu.user-member.telegram-info': 'Telegram Info',
+  'menu.user-member.bot-config': 'Bot Config',
+  'menu.user-member.balance-record': 'Balance Records',
+  'menu.user-member.vip-upgrade-record': 'VIP Upgrade Records',
+  'menu.user-member.share-audit': 'Share Audit',
+  'menu.user-member.test-account': 'Test Accounts',
   'menu.user-member.vip-config': 'VIP Config',
+  'menu.user-member.invite-commission': 'Invite Commission',
 };

@@ -20,11 +20,20 @@
     </div>
 
     <van-tabs v-model:active="activeTab" sticky offset-top="46" swipeable>
-      <van-tab title="Members" name="members">
+      <van-tab title="直属成员" name="members">
         <MemberList />
       </van-tab>
-      <van-tab title="Earnings" name="earnings">
+      <van-tab title="收益" name="earnings">
         <EarningList />
+      </van-tab>
+      <van-tab title="层级" name="levels">
+        <van-cell-group inset class="level-group">
+          <van-cell title="一级团队" :value="`${userInfo.teamMemberNum ?? 0} 人`" label="已接入直属成员列表接口。" />
+          <van-cell title="二级团队" value="待开放" label="当前后端未提供二级团队分页与统计接口。" />
+          <van-cell title="三级团队" value="待开放" label="当前后端未提供三级团队分页与统计接口。" />
+          <van-cell title="邀请好友" :value="userInfo.inviteCode || '-'" is-link to="/invite" />
+          <van-cell title="收益记录" value="查看返佣" is-link to="/income" />
+        </van-cell-group>
       </van-tab>
     </van-tabs>
   </div>
@@ -102,6 +111,11 @@ onMounted(loadUser)
   font-size: 11px;
   opacity: 0.7;
   margin-top: 2px;
+}
+.level-group {
+  margin: 12px;
+  overflow: hidden;
+  border-radius: 12px;
 }
 :deep(.van-tabs__nav) {
   background: transparent;

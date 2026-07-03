@@ -39,7 +39,7 @@ import {
   type WithdrawRecord,
 } from '@/api/wallet'
 
-type TabType = 'flow' | 'deposit' | 'withdraw' | 'transfer' | 'payment'
+type TabType = 'flow' | 'deposit' | 'withdraw' | 'transfer'
 type Tone = 'in' | 'out' | 'pending' | 'muted'
 
 interface DisplayItem {
@@ -67,17 +67,10 @@ const emptyText = computed(() => {
   if (props.type === 'flow') return '暂无钱包流水'
   if (props.type === 'deposit') return '暂无充值记录'
   if (props.type === 'withdraw') return '暂无提现记录'
-  if (props.type === 'transfer') return '暂无转账记录'
-  return '支付功能即将开放'
+  return '暂无转账记录'
 })
 
 async function loadData() {
-  if (props.type === 'payment') {
-    items.value = []
-    refreshing.value = false
-    return
-  }
-
   loading.value = true
   try {
     if (props.type === 'flow') {

@@ -2,7 +2,13 @@
   <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
     <van-list v-model:loading="loading" :finished="finished" finished-text="No more tasks" @load="onLoad">
       <div class="list-wrapper">
-        <TaskItem v-for="task in list" :key="itemKey(task)" :task="task" @action="handleAction(task)" />
+        <TaskItem
+          v-for="task in list"
+          :key="itemKey(task)"
+          :task="task"
+          :readonly="readonlyMode"
+          @action="handleAction(task)"
+        />
       </div>
       <van-empty v-if="!loading && !list.length" description="No tasks here" image="search" />
     </van-list>
@@ -27,18 +33,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { showSuccessToast, showToast } from 'vant';
 import {
   MissionTaskItem,
+  MissionTaskTabStatus,
+  MissionUserTaskRecord,
   claimMissionTask,
+  getMissionRecords,
   getMissionTasks,
   submitMissionTask,
 } from '@/api/mission';
-import { rejectIfImpersonated } from '@/utils/impersonation';
+import { rejectIfImpersonated, isImpersonatedSession } from '@/utils/impersonation';
 import TaskItem from './TaskItem.vue';
 
-const props = defineProps<{ status: 'available' | 'in_progress' | 'completed' }>();
+const props = defineProps<{ status: MissionTaskTabStatus }>();
 const emit = defineEmits<{ changed: [] }>();
 
 const list = ref<MissionTaskItem[]>([]);
@@ -48,14 +57,46 @@ const refreshing = ref(false);
 const submitVisible = ref(false);
 const submitContent = ref('');
 const activeTask = ref<MissionTaskItem | null>(null);
+const readonlyMode = computed(() => isImpersonatedSession());
 
 const itemKey = (task: MissionTaskItem) => `${task.recordId || 0}-${task.taskId}`;
 
 const loadList = async () => {
+  if (props.status === 'submitted') {
+    list.value = (await getMissionRecords('SUBMITTED', 50)).map(recordItem)
+    finished.value = true
+    return
+  }
+  if (props.status === 'rejected') {
+    list.value = (await getMissionRecords('REJECTED', 50)).map(recordItem)
+    finished.value = true
+    return
+  }
   const data = await getMissionTasks(props.status, 50);
   list.value = data || [];
   finished.value = true;
 };
+
+function recordItem(record: MissionUserTaskRecord): MissionTaskItem {
+  return {
+    id: record.taskId,
+    taskId: record.taskId,
+    recordId: record.id,
+    taskCode: record.taskCode,
+    title: record.taskTitle,
+    description: record.reviewRemark || record.submitContent || '',
+    taskType: record.taskType,
+    currency: record.currency,
+    rewardAmount: record.rewardAmount,
+    requiredVipLevel: 0,
+    userStatus: record.status,
+    submitContent: record.submitContent,
+    reviewRemark: record.reviewRemark,
+    claimedAt: record.claimedAt,
+    submittedAt: record.submittedAt,
+    reviewedAt: record.reviewedAt,
+  }
+}
 
 const onLoad = async () => {
   try {
@@ -86,7 +127,7 @@ const handleAction = async (task: MissionTaskItem) => {
     emit('changed');
     return;
   }
-  if (props.status === 'in_progress') {
+  if (props.status === 'in_progress' || props.status === 'rejected') {
     activeTask.value = task;
     submitContent.value = task.submitContent || '';
     submitVisible.value = true;

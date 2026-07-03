@@ -29,11 +29,24 @@ export interface RechargeOrder {
   createTime: number;
 }
 
+export interface RechargeManualPayload {
+  userId: number;
+
+  amount: number;
+
+  coin?: string;
+
+  referenceNo?: string;
+
+  remark?: string;
+}
+
 const uri = '/api/admin/recharge';
 
 export function rechargeList(
   status?: string,
-  limit?: number
+  limit?: number,
+  userId?: number
 ): Promise<ResultInfo<Array<RechargeOrder>>> {
   return request({
     url: `${uri}/list`,
@@ -41,6 +54,17 @@ export function rechargeList(
     params: {
       ...(status ? { status } : {}),
       ...(limit ? { limit } : {}),
+      ...(userId ? { userId } : {}),
     },
+  });
+}
+
+export function manualRechargeCredit(
+  data: RechargeManualPayload
+): Promise<ResultInfo<RechargeOrder>> {
+  return request({
+    url: `${uri}/manual-credit`,
+    method: 'post',
+    data,
   });
 }

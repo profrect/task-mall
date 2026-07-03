@@ -27,7 +27,7 @@
           </van-field>
           <div class="form-actions">
             <van-checkbox v-model="loginForm.agreed" shape="square" icon-size="16px">
-              I agree to <a href="/terms">Terms</a> & <a href="/privacy">Privacy</a>
+              I agree to <router-link to="/pfrules">Terms</router-link> & <router-link to="/privacyPolicy">Privacy</router-link>
             </van-checkbox>
             <router-link to="/auth/forgot-pwd" class="forgot-link">Forgot?</router-link>
           </div>
@@ -159,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { showSuccessToast } from 'vant'
 import { login, register } from '@/api/auth'
@@ -169,7 +169,7 @@ import { store } from '@/store'
 const router = useRouter()
 const route = useRoute()
 
-const activeTab = ref('login')
+const activeTab = ref(String(route.meta.defaultTab || route.query.tab || 'login'))
 const showPwd = ref(false)
 const showRegPwd = ref(false)
 const submitting = ref(false)
@@ -236,6 +236,20 @@ const onRegister = async () => {
     submitting.value = false
   }
 }
+
+watch(
+  () => route.fullPath,
+  () => {
+    const inviteCode = String(route.query.inviteCode || '')
+    if (route.path === '/register' || route.query.tab === 'register' || inviteCode) {
+      activeTab.value = 'register'
+    }
+    if (inviteCode) {
+      regForm.inviteCode = inviteCode
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

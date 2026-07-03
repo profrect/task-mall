@@ -2,16 +2,23 @@ package com.mall.user.controller.provider;
 
 import com.mall.common.core.exception.BizException;
 import com.mall.common.core.result.Result;
+import com.mall.common.model.dto.req.UserAdminSaveReq;
+import com.mall.common.model.dto.req.UserGroupAssignReq;
+import com.mall.common.model.dto.req.UserGroupReq;
 import com.mall.common.model.dto.req.UserImpersonationTicketReq;
 import com.mall.common.model.dto.req.IdReq;
+import com.mall.common.model.dto.req.UserBatchStatusUpdateReq;
 import com.mall.common.model.dto.req.UserExistReq;
 import com.mall.common.model.dto.req.InviteCommissionRecordQueryReq;
+import com.mall.common.model.dto.req.UserLineChangeReq;
 import com.mall.common.model.dto.req.UserProfileSummaryBatchReq;
 import com.mall.common.model.dto.req.UserReq;
 import com.mall.common.model.dto.req.UserStatusUpdateReq;
 import com.mall.common.model.dto.req.VipLevelConfigReq;
 import com.mall.common.model.dto.resp.UserExistResp;
+import com.mall.common.model.dto.resp.UserGroupResp;
 import com.mall.common.model.dto.resp.UserImpersonationTicketResp;
+import com.mall.common.model.dto.resp.UserLineageResp;
 import com.mall.common.model.dto.resp.UserProfileSummaryResp;
 import com.mall.common.model.dto.resp.UserResp;
 import com.mall.common.model.dto.resp.UserStatsResp;
@@ -20,6 +27,7 @@ import com.mall.common.model.dto.resp.VipLevelConfigResp;
 import com.mall.user.service.InviteCommissionService;
 import com.mall.user.service.UserImpersonationService;
 import com.mall.user.service.UserInfoService;
+import com.mall.user.service.UserMemberGroupService;
 import com.mall.user.service.VipService;
 import com.mybatisflex.core.paginate.Page;
 import jakarta.annotation.Resource;
@@ -48,6 +56,9 @@ public class UserProviderController {
     @Resource
     private UserImpersonationService userImpersonationService;
 
+    @Resource
+    private UserMemberGroupService userMemberGroupService;
+
     @PostMapping("/user-page")
     public Result<Page<UserResp>> userPage(@RequestBody UserReq req){
         return Result.ok(userInfoService.pageList(req));
@@ -61,6 +72,61 @@ public class UserProviderController {
     @PostMapping("/status")
     public Result<Void> updateStatus(@RequestBody UserStatusUpdateReq req) throws BizException {
         userInfoService.updateStatus(req.getUserId(), req.getStatus());
+        return Result.ok();
+    }
+
+    @PostMapping("/batch-status")
+    public Result<Void> updateStatusBatch(@RequestBody UserBatchStatusUpdateReq req) throws BizException {
+        userInfoService.updateStatusBatch(req.getUserIds(), req.getStatus());
+        return Result.ok();
+    }
+
+    @PostMapping("/detail")
+    public Result<UserResp> detail(@RequestBody IdReq req) throws BizException {
+        return Result.ok(userInfoService.detail(req.getId()));
+    }
+
+    @PostMapping("/admin-save")
+    public Result<UserResp> adminSave(@RequestBody UserAdminSaveReq req) throws BizException {
+        return Result.ok(userInfoService.adminSave(req));
+    }
+
+    @PostMapping("/lineage")
+    public Result<UserLineageResp> lineage(@RequestBody IdReq req) throws BizException {
+        return Result.ok(userInfoService.lineage(req.getId()));
+    }
+
+    @PostMapping("/lineage/change")
+    public Result<Void> changeParent(@RequestBody UserLineChangeReq req) throws BizException {
+        userInfoService.changeParent(req);
+        return Result.ok();
+    }
+
+    @GetMapping("/group/list")
+    public Result<List<UserGroupResp>> groupList(@RequestParam(name = "status", required = false) Integer status) {
+        return Result.ok(userMemberGroupService.list(status));
+    }
+
+    @PostMapping("/group/save")
+    public Result<UserGroupResp> saveGroup(@RequestBody UserGroupReq req) throws BizException {
+        return Result.ok(userMemberGroupService.save(req));
+    }
+
+    @PostMapping("/group/delete")
+    public Result<Void> deleteGroup(@RequestBody IdReq req) throws BizException {
+        userMemberGroupService.delete(req.getId());
+        return Result.ok();
+    }
+
+    @PostMapping("/group/assign")
+    public Result<Void> assignGroup(@RequestBody UserGroupAssignReq req) throws BizException {
+        userMemberGroupService.assign(req);
+        return Result.ok();
+    }
+
+    @PostMapping("/logout")
+    public Result<Void> logout(@RequestBody IdReq req) throws BizException {
+        userInfoService.logout(req.getId());
         return Result.ok();
     }
 

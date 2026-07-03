@@ -13,6 +13,6 @@ import java.util.List;
  */
 public interface RechargeQueryService {
 
-    /** 充值订单列表：status 留空查全部（CONFIRMING/CREDITED），最新在前，limit 限量。 */
-    List<RechargeOrderResp> list(String status, Integer limit) throws BizException;
+    /** 充值订单列表：status 留空查全部（CONFIRMING/CREDITED），userId 可选，最新在前，limit 限量。 */
+    List<RechargeOrderResp> list(String status, Long userId, Integer limit) throws BizException;
 }

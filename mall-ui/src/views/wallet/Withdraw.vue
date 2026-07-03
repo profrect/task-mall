@@ -15,12 +15,20 @@
         <span class="chain-badge">TRON</span>
         <span class="chain-text">USDT · TRC20</span>
       </div>
+      <van-notice-bar
+        v-if="readonlyMode"
+        color="#ad6800"
+        background="#fff7e6"
+        left-icon="warning-o"
+        text="当前为后台模拟登录，仅可查看提现记录，不能提交提现申请。"
+      />
       <van-field
         v-model="form.toAddress"
         name="toAddress"
         label="提现地址"
         placeholder="请输入 USDT-TRC20 收款地址"
         clearable
+        :readonly="readonlyMode"
         :rules="[{ required: true, message: '请输入提现地址' }]"
       />
       <van-field
@@ -30,6 +38,7 @@
         placeholder="请输入提现金额"
         type="number"
         clearable
+        :readonly="readonlyMode"
         :rules="[{ required: true, message: '请输入提现金额' }]"
       />
       <div class="fee-box">
@@ -37,8 +46,8 @@
         <div>提交后先冻结余额，审核通过后链上广播；审核驳回会自动解冻。</div>
       </div>
       <div class="submit-wrap">
-        <van-button round block type="primary" native-type="submit" :loading="submitting">
-          提交提现申请
+        <van-button round block type="primary" native-type="submit" :loading="submitting" :disabled="readonlyMode">
+          {{ readonlyMode ? '模拟登录只读' : '提交提现申请' }}
         </van-button>
       </div>
     </van-form>
@@ -72,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { showSuccessToast, showFailToast, showConfirmDialog } from 'vant'
 import {
   applyWithdraw,
@@ -81,7 +90,7 @@ import {
   type WalletOverview,
   type WithdrawRecord,
 } from '@/api/wallet'
-import { rejectIfImpersonated } from '@/utils/impersonation'
+import { isImpersonatedSession, rejectIfImpersonated } from '@/utils/impersonation'
 
 const overview = ref<WalletOverview>({
   userId: 0,
@@ -100,6 +109,7 @@ const records = ref<WithdrawRecord[]>([])
 const submitting = ref(false)
 const loadingRec = ref(false)
 const refreshing = ref(false)
+const readonlyMode = computed(() => isImpersonatedSession())
 
 async function loadOverview() {
   overview.value = await getOverview()

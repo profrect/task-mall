@@ -29,6 +29,7 @@ import { MissionTaskItem } from '@/api/mission';
 
 const props = defineProps<{
   task: MissionTaskItem;
+  readonly?: boolean;
 }>();
 
 const emit = defineEmits<{ action: [] }>();
@@ -53,6 +54,7 @@ const statusTagType = computed(() => {
 });
 
 const btnText = computed(() => {
+  if (props.readonly && (!props.task.userStatus || props.task.userStatus === 'CLAIMED' || props.task.userStatus === 'REJECTED')) return 'Read Only';
   if (!props.task.userStatus) return 'Start';
   if (props.task.userStatus === 'CLAIMED' || props.task.userStatus === 'REJECTED') return 'Submit';
   if (props.task.userStatus === 'SUBMITTED') return 'Reviewing';
@@ -66,7 +68,9 @@ const btnType = computed(() => {
   return 'default';
 });
 
-const btnDisabled = computed(() => ['SUBMITTED', 'APPROVED', 'CANCELLED', 'EXPIRED'].includes(props.task.userStatus || ''));
+const btnDisabled = computed(() =>
+  Boolean(props.readonly) || ['SUBMITTED', 'APPROVED', 'CANCELLED', 'EXPIRED'].includes(props.task.userStatus || '')
+);
 
 const moneyText = (value?: number) => Number(value || 0).toFixed(6);
 </script>

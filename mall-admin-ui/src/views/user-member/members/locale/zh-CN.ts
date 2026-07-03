@@ -1,6 +1,16 @@
 export default {
   'menu.user-member':'会员管理',
   'menu.member-list':'会员列表',
+  'menu.user-member.member-groups': '分组设置',
+  'menu.user-member.member-log': '会员日志',
+  'menu.user-member.member-flow': '会员流水',
+  'menu.user-member.site-message': '站内信',
+  'menu.user-member.telegram-info': '电报信息',
+  'menu.user-member.bot-config': '机器人配置',
+  'menu.user-member.balance-record': '余额记录',
+  'menu.user-member.vip-upgrade-record': '升级记录',
+  'menu.user-member.share-audit': '分享审核',
+  'menu.user-member.test-account': '测试账号',
   'menu.user-member.vip-config': 'VIP配置',
   'menu.user-member.invite-commission': '邀请返佣',
 };

@@ -26,10 +26,10 @@
         type="warning"
         size="small"
         round
-        :disabled="isLocked"
+        :disabled="isLocked || props.readonly"
         @click="$emit('upgrade', vip)"
       >
-        {{ isLocked ? 'Locked' : 'Upgrade' }}
+        {{ props.readonly ? 'Read Only' : isLocked ? 'Locked' : 'Upgrade' }}
       </van-button>
       <van-button v-else-if="isCurrent" disabled size="small" round>Active</van-button>
     </div>
@@ -43,6 +43,7 @@ import type { VipLevelConfig } from '@/api/user'
 const props = defineProps<{
   vip: VipLevelConfig
   currentLevel: number
+  readonly?: boolean
 }>()
 
 defineEmits(['upgrade'])

@@ -35,37 +35,35 @@
       </div>
     </div>
 
-    <!-- 五维订单 Tabs -->
+    <!-- 钱包记录 Tabs：只展示已有真实接口的数据域。 -->
     <van-tabs v-model:active="activeTab" sticky offset-top="46" shrink swipeable>
-      <van-tab title="Wallet Flow" name="flow">
+      <van-tab title="账变流水" name="flow">
         <OrderList type="flow" />
       </van-tab>
-      <van-tab title="Deposits" name="deposit">
+      <van-tab title="充值记录" name="deposit">
         <OrderList type="deposit" />
       </van-tab>
-      <van-tab title="Withdrawals" name="withdraw">
+      <van-tab title="提现记录" name="withdraw">
         <OrderList type="withdraw" />
       </van-tab>
-      <van-tab title="Transfers" name="transfer">
+      <van-tab title="转账记录" name="transfer">
         <OrderList type="transfer" />
-      </van-tab>
-      <van-tab title="Payments" name="payment">
-        <OrderList type="payment" />
       </van-tab>
     </van-tabs>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { showToast } from 'vant'
 import OrderList from '@/components/wallet/OrderList.vue'
 import { getOverview } from '@/api/wallet'
 import { tokenStore } from '@/api/http'
 
 const router = useRouter()
-const activeTab = ref('flow')
+const route = useRoute()
+const activeTab = ref(String(route.query.tab || 'flow'))
 
 const assets = ref({
   totalBalance: '0.00',
@@ -102,6 +100,15 @@ const handleAction = (type: string) => {
   }
   showToast('该功能即将开放')
 }
+
+watch(
+  () => route.query.tab,
+  (tab) => {
+    if (typeof tab === 'string' && ['flow', 'deposit', 'withdraw', 'transfer'].includes(tab)) {
+      activeTab.value = tab
+    }
+  }
+)
 
 onMounted(loadOverview)
 </script>

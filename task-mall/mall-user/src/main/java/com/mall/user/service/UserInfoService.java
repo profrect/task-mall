@@ -2,8 +2,11 @@ package com.mall.user.service;
 
 import com.mall.common.core.exception.BizException;
 import com.mall.common.model.dto.BasePageDTO;
+import com.mall.common.model.dto.req.UserAdminSaveReq;
+import com.mall.common.model.dto.req.UserLineChangeReq;
 import com.mall.common.model.dto.req.UserReq;
 import com.mall.common.model.dto.resp.UserExistResp;
+import com.mall.common.model.dto.resp.UserLineageResp;
 import com.mall.common.model.dto.resp.UserProfileSummaryResp;
 import com.mall.common.model.dto.resp.UserResp;
 import com.mall.common.model.dto.resp.UserStatsResp;
@@ -25,6 +28,18 @@ public interface UserInfoService extends IService<UserInfo> {
     /** 管理端会员分页（provider）。 */
     Page<UserResp> pageList(UserReq req);
 
+    /** 管理端会员详情（provider）。 */
+    UserResp detail(Long userId) throws BizException;
+
+    /** 管理端新增/编辑会员：账号、密码、状态、VIP、上级、分组统一在用户域内落库。 */
+    UserResp adminSave(UserAdminSaveReq req) throws BizException;
+
+    /** 管理端查看会员上下级链路。 */
+    UserLineageResp lineage(Long userId) throws BizException;
+
+    /** 管理端调整会员上级，禁止形成环。 */
+    void changeParent(UserLineChangeReq req) throws BizException;
+
     /** 当前登录用户的资料详情（聚合登录账号、邀请人、直属团队人数）。 */
     UserDetailVO currentUserDetail(long userId) throws BizException;
 
@@ -39,6 +54,12 @@ public interface UserInfoService extends IService<UserInfo> {
 
     /** 管理端变更会员状态：1=正常，2=冻结。冻结会失效该用户现有登录态。 */
     void updateStatus(Long userId, Integer status) throws BizException;
+
+    /** 管理端批量变更会员状态：1=正常，2=冻结。冻结会失效会员现有登录态。 */
+    void updateStatusBatch(List<Long> userIds, Integer status) throws BizException;
+
+    /** 管理端强制会员当前登录态失效。 */
+    void logout(Long userId) throws BizException;
 
     /** 更新当前用户资料：仅允许昵称 / 邮箱，userId 取自会话。 */
     void updateUserInfo(long userId, UserInfoDTO dto) throws BizException;

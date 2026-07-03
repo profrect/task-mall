@@ -94,6 +94,7 @@ async function loadRecords() {
 }
 
 async function copyAddress() {
+  if (rejectIfImpersonated('模拟登录仅可查看充值记录，不能复制充值地址')) return
   if (!address.value) return
   try {
     await navigator.clipboard.writeText(address.value)

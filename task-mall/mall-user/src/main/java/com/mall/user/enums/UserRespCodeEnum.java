@@ -21,6 +21,15 @@ public enum UserRespCodeEnum implements RespCode {
     IMPERSONATION_TICKET_INVALID(21013, "模拟登录票据无效"),
     IMPERSONATION_TICKET_EXPIRED(21014, "模拟登录票据已过期"),
     IMPERSONATION_ADMIN_INVALID(21015, "模拟登录管理员无效"),
+    USER_BATCH_EMPTY(21016, "请选择会员"),
+    USER_GROUP_NOT_FOUND(21017, "会员分组不存在"),
+    USER_GROUP_NAME_EMPTY(21018, "会员分组名称不能为空"),
+    USER_GROUP_NAME_EXISTS(21019, "会员分组已存在：%s"),
+    USER_GROUP_IN_USE(21020, "会员分组仍有成员，不能删除"),
+    ACCOUNT_REQUIRED(21021, "会员账号不能为空"),
+    PASSWORD_REQUIRED(21022, "会员密码不能为空"),
+    USER_PARENT_INVALID(21023, "上级会员无效"),
+    USER_LINE_CYCLE(21024, "不能把会员调整到自己的下级链路中"),
     ;
 
     private final Integer code;

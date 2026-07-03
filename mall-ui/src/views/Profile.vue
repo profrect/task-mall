@@ -50,10 +50,20 @@
           :key="item.level"
           :vip="item"
           :current-level="vipLevel"
+          :readonly="readonlyMode"
           @upgrade="confirmUpgrade"
         />
       </div>
     </div>
+
+    <div class="section-title">服务入口</div>
+    <van-cell-group inset class="security-group">
+      <van-cell title="账户中心" icon="user-o" value="资金/安全/内容" is-link to="/account" />
+      <van-cell title="邀请好友" icon="friends-o" :value="userInfo.inviteCode || '-'" is-link to="/invite" />
+      <van-cell title="收益记录" icon="gold-coin-o" value="返佣明细" is-link to="/income" />
+      <van-cell title="公告" icon="volume-o" value="平台公告" is-link to="/notice" />
+      <van-cell title="帮助中心" icon="question-o" value="待内容接口" is-link to="/help" />
+    </van-cell-group>
 
     <div class="section-title">Security Settings</div>
     <van-cell-group inset class="security-group">
@@ -61,6 +71,12 @@
       <van-cell title="Security Questions" icon="shield-o" value="未开放" />
       <van-cell title="Fund Password" icon="balance-pay" value="未开放" />
     </van-cell-group>
+
+    <div class="logout-wrap">
+      <van-button round block type="danger" plain @click="logout">
+        退出登录
+      </van-button>
+    </div>
 
     <van-dialog
       v-model:show="showNickDialog"
@@ -79,6 +95,8 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { showConfirmDialog, showFailToast, showSuccessToast } from 'vant'
 import router from '@/router'
+import { tokenStore } from '@/api/http'
+import { store } from '@/store'
 import VipCard from '@/components/profile/VipCard.vue'
 import {
   getCurrentUser,
@@ -88,7 +106,7 @@ import {
   type UserDetail,
   type VipLevelConfig,
 } from '@/api/user'
-import { rejectIfImpersonated } from '@/utils/impersonation'
+import { isImpersonatedSession, rejectIfImpersonated } from '@/utils/impersonation'
 
 const userInfo = ref<UserDetail>({
   userId: 0,
@@ -106,6 +124,7 @@ const vipLevels = ref<VipLevelConfig[]>([])
 
 const vipLevel = computed(() => Number(userInfo.value.vipLevel || 0))
 const displayName = computed(() => userInfo.value.nickName || userInfo.value.account || 'User')
+const readonlyMode = computed(() => isImpersonatedSession())
 
 async function loadUser() {
   userInfo.value = await getCurrentUser()
@@ -163,6 +182,14 @@ async function confirmUpgrade(item: VipLevelConfig) {
       // 业务错误已由请求层展示；这里保留取消弹窗的安静路径。
     }
   }
+}
+
+async function logout() {
+  tokenStore.clear()
+  store.setLoggedIn(false)
+  store.setImpersonated(false)
+  showSuccessToast('已退出登录')
+  await router.replace('/login')
 }
 
 onMounted(() => {
@@ -277,6 +304,9 @@ onMounted(() => {
   margin: 0 12px;
   border-radius: 12px;
   overflow: hidden;
+}
+.logout-wrap {
+  margin: 18px 12px 0;
 }
 .bottom-placeholder {
   height: 70px;

@@ -19,6 +19,16 @@ public class UserInfoVO {
     private String userName;
 
     /**
+     * 昵称
+     */
+    private String nickname;
+
+    /**
+     * 邮箱
+     */
+    private String email;
+
+    /**
      * VIP等级
      */
     private Integer vipLevel;
@@ -37,6 +47,21 @@ public class UserInfoVO {
      * 上级用户账号
      */
     private String parentUserName;
+
+    /**
+     * 上级用户ID
+     */
+    private Long parentUserId;
+
+    /**
+     * 分组 ID
+     */
+    private Long groupId;
+
+    /**
+     * 分组名称
+     */
+    private String groupName;
 
     /**
      * 注册时间

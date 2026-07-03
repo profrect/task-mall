@@ -65,6 +65,45 @@ CREATE TABLE `user_invite_relation`
     KEY           `idx_inviter` (`inviter_id`)
 ) ENGINE=InnoDB COMMENT='用户邀请关系';
 
+CREATE TABLE `user_member_group`
+(
+    `id`          bigint       NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `group_name`  varchar(50)  NOT NULL COMMENT '分组名称',
+    `remark`      varchar(255) NOT NULL DEFAULT '' COMMENT '备注',
+    `status`      tinyint      NOT NULL DEFAULT 1 COMMENT '状态（1-启用，0-停用）',
+    `sort_order`  int          NOT NULL DEFAULT 0 COMMENT '排序',
+    `create_time` bigint                DEFAULT NULL COMMENT '数据创建时间',
+    `update_time` bigint                DEFAULT NULL COMMENT '数据修改时间',
+    `creator`     varchar(50)           DEFAULT '' COMMENT '数据创建者',
+    `updater`     varchar(50)           DEFAULT '' COMMENT '数据修改者',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_group_name` (`group_name`),
+    KEY           `idx_status_sort` (`status`, `sort_order`)
+) ENGINE=InnoDB COMMENT='会员分组表';
+
+CREATE TABLE `user_member_group_bind`
+(
+    `id`          bigint      NOT NULL AUTO_INCREMENT COMMENT 'ID',
+    `user_id`     bigint      NOT NULL COMMENT '全局唯一用户ID',
+    `group_id`    bigint      NOT NULL COMMENT '会员分组ID',
+    `create_time` bigint      DEFAULT NULL COMMENT '数据创建时间',
+    `update_time` bigint      DEFAULT NULL COMMENT '数据修改时间',
+    `creator`     varchar(50) DEFAULT '' COMMENT '数据创建者',
+    `updater`     varchar(50) DEFAULT '' COMMENT '数据修改者',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_id` (`user_id`),
+    KEY           `idx_group_id` (`group_id`)
+) ENGINE=InnoDB COMMENT='会员分组绑定表';
+
+INSERT INTO `user_member_group`(`group_name`, `remark`, `status`, `sort_order`, `creator`, `updater`, `create_time`, `update_time`)
+VALUES ('普通会员', '默认演示分组', 1, 1, '', '', 1782880000000, NULL),
+       ('重点会员', '高价值会员演示分组', 1, 2, '', '', 1782880000000, NULL),
+       ('测试会员', '测试账号和演示账号分组', 1, 3, '', '', 1782880000000, NULL)
+ON DUPLICATE KEY UPDATE `remark` = VALUES(`remark`),
+                        `status` = VALUES(`status`),
+                        `sort_order` = VALUES(`sort_order`),
+                        `update_time` = VALUES(`create_time`);
+
 CREATE TABLE `vip_level_config`
 (
     `id`           bigint         NOT NULL AUTO_INCREMENT COMMENT 'ID',

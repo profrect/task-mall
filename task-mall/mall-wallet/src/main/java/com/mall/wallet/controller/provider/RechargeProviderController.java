@@ -1,11 +1,15 @@
 package com.mall.wallet.controller.provider;
 
+import com.mall.common.core.exception.BizException;
 import com.mall.common.core.result.Result;
+import com.mall.common.model.dto.req.RechargeManualReq;
 import com.mall.common.model.dto.resp.RechargeOrderResp;
 import com.mall.wallet.recharge.RechargeService;
 import com.mall.wallet.recharge.model.entity.WalletRechargeOrder;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,12 +43,21 @@ public class RechargeProviderController {
     @GetMapping("/list")
     public Result<List<RechargeOrderResp>> list(
             @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "userId", required = false) Long userId,
             @RequestParam(name = "limit", required = false, defaultValue = "200") Integer limit) {
         int safeLimit = limit == null || limit <= 0 ? DEFAULT_LIMIT : Math.min(limit, MAX_LIMIT);
-        List<RechargeOrderResp> list = rechargeService.listForAdmin(status, safeLimit).stream()
+        List<RechargeOrderResp> list = rechargeService.listForAdmin(status, userId, safeLimit).stream()
                 .map(this::toResp)
                 .toList();
         return Result.ok(list);
+    }
+
+    /**
+     * 人工充值补单：仅供后台聚合层调用，入账动作在 wallet 事务内完成。
+     */
+    @PostMapping("/manual-credit")
+    public Result<RechargeOrderResp> manualCredit(@RequestBody RechargeManualReq req) throws BizException {
+        return Result.ok(toResp(rechargeService.manualCredit(req)));
     }
 
     private RechargeOrderResp toResp(WalletRechargeOrder o) {

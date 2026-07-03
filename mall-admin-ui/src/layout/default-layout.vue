@@ -74,7 +74,7 @@
   useResponsive(true);
   const navbarHeight = `60px`;
   const navbar = computed(() => appStore.navbar);
-  const renderMenu = computed(() => appStore.menu && !appStore.topMenu);
+  const renderMenu = computed(() => appStore.menu);
   const hideMenu = computed(() => appStore.hideMenu);
   const footer = computed(() => appStore.footer);
   const menuWidth = computed(() => {

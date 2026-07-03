@@ -21,6 +21,12 @@ public enum AdminRespCodeEnum implements RespCode {
 
     ORDER_APPROVAL_SOURCE_INVALID(20008, "订单审核来源无效：%s"),
 
+    BOT_NAME_REPEAT(20009, "机器人名称重复：%s"),
+
+    BOT_TOKEN_REQUIRED(20010, "机器人 Token 不能为空"),
+
+    BOT_CONFIG_NOT_FOUND(20011, "机器人配置不存在：%s"),
+
     ;
 
     private final Integer code;

@@ -61,12 +61,12 @@ export type MissionTaskTabStatus = 'available' | 'in_progress' | 'submitted' | '
 
 const BASE = '/api/open/mission';
 
-export function getMissionStats(): Promise<MissionTaskStats> {
-  return http.get<MissionTaskStats>(`${BASE}/stats`);
+export function getMissionStats(taskType?: string): Promise<MissionTaskStats> {
+  return http.get<MissionTaskStats>(`${BASE}/stats`, { taskType });
 }
 
-export function getMissionTasks(status: string, limit = 50): Promise<MissionTaskItem[]> {
-  return http.get<MissionTaskItem[]>(`${BASE}/tasks`, { status, limit });
+export function getMissionTasks(status: string, limit = 50, taskType?: string): Promise<MissionTaskItem[]> {
+  return http.get<MissionTaskItem[]>(`${BASE}/tasks`, { status, limit, taskType });
 }
 
 export function claimMissionTask(taskId: number): Promise<MissionUserTaskRecord> {
@@ -77,8 +77,8 @@ export function submitMissionTask(recordId: number, submitContent: string): Prom
   return http.post<MissionUserTaskRecord>(`${BASE}/tasks/submit`, { recordId, submitContent });
 }
 
-export function getMissionRecords(status?: string, limit = 50): Promise<MissionUserTaskRecord[]> {
-  return http.get<MissionUserTaskRecord[]>(`${BASE}/records`, { status, limit });
+export function getMissionRecords(status?: string, limit = 50, taskType?: string): Promise<MissionUserTaskRecord[]> {
+  return http.get<MissionUserTaskRecord[]>(`${BASE}/records`, { status, limit, taskType });
 }
 
 export function getInvestProjects(limit = 50): Promise<MissionInvestProject[]> {

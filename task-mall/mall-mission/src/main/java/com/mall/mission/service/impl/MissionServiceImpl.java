@@ -168,6 +168,7 @@ public class MissionServiceImpl implements MissionService {
                 .from(MissionUserTask.class)
                 .eq(MissionUserTask::getUserId, q.getUserId(), q.getUserId() != null)
                 .eq(MissionUserTask::getTaskId, q.getTaskId(), q.getTaskId() != null)
+                .eq(MissionUserTask::getTaskType, normalizeUpper(q.getTaskType()), StringUtils.hasText(q.getTaskType()))
                 .eq(MissionUserTask::getStatus, normalizeUpper(q.getStatus()), StringUtils.hasText(q.getStatus()))
                 .and(w -> w.like(MissionUserTask::getTaskTitle, q.getKeyword())
                         .or(MissionUserTask::getTaskCode).like(q.getKeyword()), StringUtils.hasText(q.getKeyword()))
@@ -214,24 +215,26 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public MissionTaskStatsVO userStats(Long userId) throws BizException {
+    public MissionTaskStatsVO userStats(Long userId, String taskType) throws BizException {
         Preconditions.notNull(userId, MissionRespCodeEnum.USER_TASK_STATUS_INVALID);
+        String normalizedTaskType = normalizeUpper(taskType);
         return MissionTaskStatsVO.builder()
-                .completedCount(nz(userTaskMapper.countByStatus(userId, MissionUserTaskStatus.APPROVED.name())))
-                .inProgressCount(nz(userTaskMapper.countInProgress(userId)))
-                .totalEarnings(nz(userTaskMapper.sumApprovedReward(userId)))
+                .completedCount(nz(userTaskMapper.countByStatus(userId, MissionUserTaskStatus.APPROVED.name(), normalizedTaskType)))
+                .inProgressCount(nz(userTaskMapper.countInProgress(userId, normalizedTaskType)))
+                .totalEarnings(nz(userTaskMapper.sumApprovedReward(userId, normalizedTaskType)))
                 .build();
     }
 
     @Override
-    public List<MissionTaskVO> userTasks(Long userId, String status, Integer limit) throws BizException {
+    public List<MissionTaskVO> userTasks(Long userId, String status, String taskType, Integer limit) throws BizException {
         Preconditions.notNull(userId, MissionRespCodeEnum.USER_TASK_STATUS_INVALID);
         int safeLimit = safeLimit(limit);
+        String normalizedTaskType = normalizeUpper(taskType);
         String s = StringUtils.hasText(status) ? status.trim().toLowerCase(Locale.ROOT) : "available";
         return switch (s) {
-            case "available" -> userTaskMapper.listAvailable(userId, System.currentTimeMillis(), safeLimit);
-            case "in_progress" -> userTaskMapper.listInProgress(userId, safeLimit);
-            case "completed" -> userTaskMapper.listCompleted(userId, safeLimit);
+            case "available" -> userTaskMapper.listAvailable(userId, System.currentTimeMillis(), normalizedTaskType, safeLimit);
+            case "in_progress" -> userTaskMapper.listInProgress(userId, normalizedTaskType, safeLimit);
+            case "completed" -> userTaskMapper.listCompleted(userId, normalizedTaskType, safeLimit);
             default -> List.of();
         };
     }
@@ -288,11 +291,12 @@ public class MissionServiceImpl implements MissionService {
     }
 
     @Override
-    public List<MissionUserTaskResp> records(Long userId, String status, Integer limit) throws BizException {
+    public List<MissionUserTaskResp> records(Long userId, String status, String taskType, Integer limit) throws BizException {
         Preconditions.notNull(userId, MissionRespCodeEnum.USER_TASK_STATUS_INVALID);
         QueryWrapper wrapper = QueryWrapper.create()
                 .from(MissionUserTask.class)
                 .eq(MissionUserTask::getUserId, userId)
+                .eq(MissionUserTask::getTaskType, normalizeUpper(taskType), StringUtils.hasText(taskType))
                 .eq(MissionUserTask::getStatus, normalizeUpper(status), StringUtils.hasText(status))
                 .orderBy(MissionUserTask::getId, false)
                 .limit(safeLimit(limit));
@@ -392,7 +396,7 @@ public class MissionServiceImpl implements MissionService {
         settlement.setTaskId(record.getTaskId());
         settlement.setCurrency(normalizeCurrency(record.getCurrency()));
         settlement.setAmount(record.getRewardAmount());
-        settlement.setBizType("TASK_REWARD");
+        settlement.setBizType(rewardBizType(record.getTaskType()));
         settlement.setBizId(String.valueOf(record.getId()));
         settlement.setStatus(MissionRewardSettlementStatus.PENDING.name());
         settlementMapper.insert(settlement);
@@ -550,6 +554,17 @@ public class MissionServiceImpl implements MissionService {
         } catch (IllegalArgumentException e) {
             throw new BizException(MissionRespCodeEnum.GOODS_INVALID, null);
         }
+    }
+
+    private String rewardBizType(String taskType) {
+        String normalized = normalizeUpper(taskType);
+        return switch (normalized == null ? "" : normalized) {
+            case "TASK_CENTER" -> "TASK_CENTER_REWARD";
+            case "SHARE" -> "SHARE_TASK_REWARD";
+            case "VIDEO" -> "VIDEO_TASK_REWARD";
+            case "VA" -> "VA_TASK_REWARD";
+            default -> "TASK_REWARD";
+        };
     }
 
     private String normalizeCurrency(String value) {

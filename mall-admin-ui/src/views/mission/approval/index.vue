@@ -5,6 +5,13 @@
       <a-space :size="12" wrap style="margin-bottom: 16px">
         <a-input-number v-model="query.userId" placeholder="用户ID" style="width: 160px" />
         <a-input v-model="query.keyword" allow-clear placeholder="任务标题/编码" style="width: 220px" />
+        <a-select v-model="query.taskType" allow-clear placeholder="任务类型" style="width: 160px">
+          <a-option value="GENERAL">通用任务</a-option>
+          <a-option value="TASK_CENTER">任务中心</a-option>
+          <a-option value="SHARE">分享任务</a-option>
+          <a-option value="VIDEO">视频任务</a-option>
+          <a-option value="VA">VA任务</a-option>
+        </a-select>
         <a-select v-model="query.status" allow-clear placeholder="状态" style="width: 160px">
           <a-option value="CLAIMED">已领取</a-option>
           <a-option value="SUBMITTED">待审核</a-option>
@@ -99,6 +106,7 @@
   const query = reactive({
     userId: undefined as number | undefined,
     keyword: '',
+    taskType: undefined as string | undefined,
     status: 'SUBMITTED' as string | undefined,
     pageNumber: 1,
     pageSize: 10,
@@ -109,6 +117,7 @@
     { title: '用户ID', dataIndex: 'userId', align: 'center', width: 120 },
     { title: '任务编码', dataIndex: 'taskCode', align: 'center', width: 150 },
     { title: '任务标题', dataIndex: 'taskTitle', align: 'center', width: 180 },
+    { title: '类型', dataIndex: 'taskType', align: 'center', width: 110 },
     { title: '奖励', slotName: 'rewardAmount', align: 'center', width: 140 },
     { title: '状态', slotName: 'status', align: 'center', width: 110 },
     { title: '提交内容', slotName: 'submitContent', align: 'center', width: 260 },
@@ -154,6 +163,7 @@
     Object.assign(query, {
       userId: undefined,
       keyword: '',
+      taskType: undefined,
       status: 'SUBMITTED',
       pageNumber: 1,
     });

@@ -15,28 +15,45 @@ import java.util.List;
 public interface MissionUserTaskMapper extends BaseMapper<MissionUserTask> {
 
     @Select("""
+            <script>
             SELECT COUNT(*)
             FROM mission_user_task
             WHERE user_id = #{userId}
               AND status = #{status}
+              <if test="taskType != null and taskType != ''">
+                  AND task_type = #{taskType}
+              </if>
+            </script>
             """)
-    Long countByStatus(@Param("userId") Long userId, @Param("status") String status);
+    Long countByStatus(@Param("userId") Long userId,
+                       @Param("status") String status,
+                       @Param("taskType") String taskType);
 
     @Select("""
+            <script>
             SELECT COUNT(*)
             FROM mission_user_task
             WHERE user_id = #{userId}
               AND status IN ('CLAIMED', 'SUBMITTED', 'REJECTED')
+              <if test="taskType != null and taskType != ''">
+                  AND task_type = #{taskType}
+              </if>
+            </script>
             """)
-    Long countInProgress(@Param("userId") Long userId);
+    Long countInProgress(@Param("userId") Long userId, @Param("taskType") String taskType);
 
     @Select("""
+            <script>
             SELECT COALESCE(SUM(reward_amount), 0)
             FROM mission_user_task
             WHERE user_id = #{userId}
               AND status = 'APPROVED'
+              <if test="taskType != null and taskType != ''">
+                  AND task_type = #{taskType}
+              </if>
+            </script>
             """)
-    BigDecimal sumApprovedReward(@Param("userId") Long userId);
+    BigDecimal sumApprovedReward(@Param("userId") Long userId, @Param("taskType") String taskType);
 
     @Select("""
             <script>
@@ -62,6 +79,7 @@ public interface MissionUserTaskMapper extends BaseMapper<MissionUserTask> {
                                               @Param("limit") int limit);
 
     @Select("""
+            <script>
             SELECT t.id AS taskId,
                    t.id AS id,
                    NULL AS recordId,
@@ -80,8 +98,11 @@ public interface MissionUserTaskMapper extends BaseMapper<MissionUserTask> {
                    NULL AS reviewedAt
             FROM mission_task t
             WHERE t.status = 1
-              AND (t.start_at IS NULL OR t.start_at <= #{now})
-              AND (t.end_at IS NULL OR t.end_at >= #{now})
+              AND (t.start_at IS NULL OR t.start_at &lt;= #{now})
+              AND (t.end_at IS NULL OR t.end_at &gt;= #{now})
+              <if test="taskType != null and taskType != ''">
+                  AND t.task_type = #{taskType}
+              </if>
               AND NOT EXISTS (
                   SELECT 1
                   FROM mission_user_task ut
@@ -91,12 +112,15 @@ public interface MissionUserTaskMapper extends BaseMapper<MissionUserTask> {
               )
             ORDER BY t.sort_order ASC, t.id DESC
             LIMIT #{limit}
+            </script>
             """)
     List<MissionTaskVO> listAvailable(@Param("userId") Long userId,
                                       @Param("now") Long now,
+                                      @Param("taskType") String taskType,
                                       @Param("limit") int limit);
 
     @Select("""
+            <script>
             SELECT ut.task_id AS taskId,
                    ut.task_id AS id,
                    ut.id AS recordId,
@@ -117,12 +141,19 @@ public interface MissionUserTaskMapper extends BaseMapper<MissionUserTask> {
             LEFT JOIN mission_task t ON t.id = ut.task_id
             WHERE ut.user_id = #{userId}
               AND ut.status IN ('CLAIMED', 'SUBMITTED', 'REJECTED')
+              <if test="taskType != null and taskType != ''">
+                  AND ut.task_type = #{taskType}
+              </if>
             ORDER BY ut.id DESC
             LIMIT #{limit}
+            </script>
             """)
-    List<MissionTaskVO> listInProgress(@Param("userId") Long userId, @Param("limit") int limit);
+    List<MissionTaskVO> listInProgress(@Param("userId") Long userId,
+                                       @Param("taskType") String taskType,
+                                       @Param("limit") int limit);
 
     @Select("""
+            <script>
             SELECT ut.task_id AS taskId,
                    ut.task_id AS id,
                    ut.id AS recordId,
@@ -143,8 +174,14 @@ public interface MissionUserTaskMapper extends BaseMapper<MissionUserTask> {
             LEFT JOIN mission_task t ON t.id = ut.task_id
             WHERE ut.user_id = #{userId}
               AND ut.status IN ('APPROVED', 'CANCELLED', 'EXPIRED')
+              <if test="taskType != null and taskType != ''">
+                  AND ut.task_type = #{taskType}
+              </if>
             ORDER BY ut.id DESC
             LIMIT #{limit}
+            </script>
             """)
-    List<MissionTaskVO> listCompleted(@Param("userId") Long userId, @Param("limit") int limit);
+    List<MissionTaskVO> listCompleted(@Param("userId") Long userId,
+                                      @Param("taskType") String taskType,
+                                      @Param("limit") int limit);
 }

@@ -36,18 +36,20 @@
 import { computed, ref, watch } from 'vue';
 import { showSuccessToast, showToast } from 'vant';
 import {
-  MissionTaskItem,
-  MissionTaskTabStatus,
-  MissionUserTaskRecord,
   claimMissionTask,
   getMissionRecords,
   getMissionTasks,
   submitMissionTask,
 } from '@/api/mission';
+import type {
+  MissionTaskItem,
+  MissionTaskTabStatus,
+  MissionUserTaskRecord,
+} from '@/api/mission';
 import { rejectIfImpersonated, isImpersonatedSession } from '@/utils/impersonation';
 import TaskItem from './TaskItem.vue';
 
-const props = defineProps<{ status: MissionTaskTabStatus }>();
+const props = defineProps<{ status: MissionTaskTabStatus; taskType?: string }>();
 const emit = defineEmits<{ changed: [] }>();
 
 const list = ref<MissionTaskItem[]>([]);
@@ -63,16 +65,16 @@ const itemKey = (task: MissionTaskItem) => `${task.recordId || 0}-${task.taskId}
 
 const loadList = async () => {
   if (props.status === 'submitted') {
-    list.value = (await getMissionRecords('SUBMITTED', 50)).map(recordItem)
+    list.value = (await getMissionRecords('SUBMITTED', 50, props.taskType)).map(recordItem)
     finished.value = true
     return
   }
   if (props.status === 'rejected') {
-    list.value = (await getMissionRecords('REJECTED', 50)).map(recordItem)
+    list.value = (await getMissionRecords('REJECTED', 50, props.taskType)).map(recordItem)
     finished.value = true
     return
   }
-  const data = await getMissionTasks(props.status, 50);
+  const data = await getMissionTasks(props.status, 50, props.taskType);
   list.value = data || [];
   finished.value = true;
 };
@@ -150,7 +152,7 @@ const beforeSubmitClose = async (action: string) => {
 };
 
 watch(
-  () => props.status,
+  [() => props.status, () => props.taskType],
   () => {
     onRefresh();
   }

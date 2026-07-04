@@ -22,7 +22,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import InvestList from '@/components/invest/InvestList.vue';
-import { MissionInvestProject, getInvestProjects } from '@/api/mission';
+import { getInvestProjects } from '@/api/mission';
+import type { MissionInvestProject } from '@/api/mission';
 
 const activeTab = ref('available');
 const projects = ref<MissionInvestProject[]>([]);

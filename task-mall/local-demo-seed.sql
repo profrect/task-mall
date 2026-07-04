@@ -107,7 +107,8 @@ INSERT INTO `admin_content_item`(`id`, `type`, `language_code`, `title`, `summar
 (90003, 'USER_AGREEMENT', 'zh-CN', '用户协议', '本地演示协议', '本协议用于本地演示页面展示。平台账户、任务、钱包和活动能力以系统内实际接口状态为准。', 1, 1, '', '', @seed_time, NULL),
 (90004, 'USER_PRIVACY', 'zh-CN', '隐私政策', '本地演示隐私政策', '本地演示环境不应保存真实用户端 token、真实链上私钥或第三方 API Key。', 1, 1, '', '', @seed_time, NULL),
 (90005, 'COMPANY_PROFILE', 'zh-CN', '公司简介', '本地演示公司简介', '环宇出海任务平台本地演示内容，用于后台内容配置和用户端内容页校准。', 1, 1, '', '', @seed_time, NULL),
-(90006, 'PLATFORM_PROFILE', 'zh-CN', '平台介绍', '本地演示平台介绍', '平台演示任务、钱包、会员、VIP、邀请和抽奖闭环。未接入的能力以待开放状态页展示，不伪造数据。', 1, 1, '', '', @seed_time, NULL)
+(90006, 'PLATFORM_PROFILE', 'zh-CN', '平台介绍', '本地演示平台介绍', '平台演示任务、钱包、会员、VIP、邀请和抽奖闭环。未接入的能力以待开放状态页展示，不伪造数据。', 1, 1, '', '', @seed_time, NULL),
+(90007, 'REGULATOR', 'zh-CN', '平台规则', '本地演示平台规则', '平台规则内容由后台内容配置统一维护。资金、任务奖励、签到奖励和返佣必须通过业务记录与钱包流水结算，不直接修改余额。', 1, 1, '', '', @seed_time, NULL)
 ON DUPLICATE KEY UPDATE
     `type` = VALUES(`type`),
     `language_code` = VALUES(`language_code`),
@@ -415,7 +416,7 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO `wallet_flow_detail`(`flow_no`, `user_id`, `wallet_id`, `biz_type`, `biz_id`, `direction`, `change_amt`, `balance_before`, `balance_after`, `remark`, `create_time`, `update_time`, `creator`, `updater`) VALUES
 ('FLOW-DEMO-R-001', 178288000001, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000001 AND `currency` = 'USDT' LIMIT 1), 'RECHARGE', 'R-DEMO-001', 'IN', 500.000000, 0.000000, 500.000000, '演示充值入账', @seed_time, NULL, '', ''),
-('FLOW-DEMO-TASK-001', 178288000001, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000001 AND `currency` = 'USDT' LIMIT 1), 'TASK_REWARD', 'MUT-DEMO-APPROVED-001', 'IN', 3.000000, 500.000000, 503.000000, '演示任务奖励入账', @seed_time, NULL, '', ''),
+('FLOW-DEMO-TASK-001', 178288000001, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000001 AND `currency` = 'USDT' LIMIT 1), 'SHARE_TASK_REWARD', 'MUT-DEMO-APPROVED-001', 'IN', 3.000000, 500.000000, 503.000000, '演示分享任务奖励入账', @seed_time, NULL, '', ''),
 ('FLOW-DEMO-INVITE-001', 178288000001, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000001 AND `currency` = 'USDT' LIMIT 1), 'INVITE_COMMISSION', 'IC-DEMO-001', 'IN', 5.600000, 503.000000, 508.600000, '演示邀请返佣入账', @seed_time, NULL, '', ''),
 ('FLOW-DEMO-LOTTERY-001', 178288000001, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000001 AND `currency` = 'USDT' LIMIT 1), 'LOTTERY_REWARD', 'LOTTERY-DEMO-001', 'IN', 0.500000, 508.600000, 509.100000, '演示抽奖现金奖励入账', @seed_time, NULL, '', ''),
 ('FLOW-DEMO-TRANSFER-OUT-001', 178288000001, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000001 AND `currency` = 'USDT' LIMIT 1), 'TRANSFER_OUT', 'T-DEMO-001-002', 'OUT', 15.000000, 509.100000, 494.100000, '演示转账转出', @seed_time, NULL, '', ''),
@@ -425,7 +426,7 @@ INSERT INTO `wallet_flow_detail`(`flow_no`, `user_id`, `wallet_id`, `biz_type`, 
 ('FLOW-DEMO-VIP-002', 178288000002, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000002 AND `currency` = 'USDT' LIMIT 1), 'VIP_UPGRADE', 'VIP-DEMO-SUCCESS-002', 'OUT', 100.000000, 215.000000, 115.000000, '演示 VIP 升级扣款', @seed_time, NULL, '', ''),
 ('FLOW-DEMO-INVITE-002', 178288000002, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000002 AND `currency` = 'USDT' LIMIT 1), 'INVITE_COMMISSION', 'IC-DEMO-002', 'IN', 2.500000, 115.000000, 117.500000, '演示下级充值返佣入账', @seed_time, NULL, '', ''),
 ('FLOW-DEMO-R-003', 178288000003, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000003 AND `currency` = 'USDT' LIMIT 1), 'RECHARGE', 'R-DEMO-003', 'IN', 800.000000, 0.000000, 800.000000, '演示充值入账', @seed_time, NULL, '', ''),
-('FLOW-DEMO-TASK-003', 178288000003, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000003 AND `currency` = 'USDT' LIMIT 1), 'TASK_REWARD', 'MUT-DEMO-APPROVED-003', 'IN', 2.500000, 800.000000, 802.500000, '演示任务奖励入账', @seed_time, NULL, '', ''),
+('FLOW-DEMO-TASK-003', 178288000003, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000003 AND `currency` = 'USDT' LIMIT 1), 'TASK_CENTER_REWARD', 'MUT-DEMO-APPROVED-003', 'IN', 2.500000, 800.000000, 802.500000, '演示任务中心奖励入账', @seed_time, NULL, '', ''),
 ('FLOW-DEMO-TRANSFER-IN-003', 178288000003, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000003 AND `currency` = 'USDT' LIMIT 1), 'TRANSFER_IN', 'T-DEMO-002-003', 'IN', 25.000000, 802.500000, 827.500000, '演示转账转入', @seed_time, NULL, '', ''),
 ('FLOW-DEMO-WITHDRAW-SETTLE-003', 178288000003, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000003 AND `currency` = 'USDT' LIMIT 1), 'WITHDRAW_SETTLE', 'W-DEMO-CONFIRMED-003', 'OUT', 10.000000, 827.500000, 817.500000, '演示提现确认扣减', @seed_time, NULL, '', ''),
 ('FLOW-DEMO-R-004', 178288000004, (SELECT `id` FROM `wallet_account` WHERE `user_id` = 178288000004 AND `currency` = 'USDT' LIMIT 1), 'RECHARGE', 'R-DEMO-004', 'IN', 1250.000000, 0.000000, 1250.000000, '演示充值入账', @seed_time, NULL, '', ''),
@@ -451,10 +452,15 @@ USE `mall-mission`;
 
 INSERT INTO `mission_task`(`task_code`, `title`, `description`, `task_type`, `currency`, `reward_amount`, `required_vip_level`, `daily_limit`, `start_at`, `end_at`, `sort_order`, `status`, `creator`, `updater`, `create_time`, `update_time`) VALUES
 ('TASK-DEMO-001', '完成新手资料任务', '领取任务后提交完成说明，后台审核通过后奖励入账。', 'GENERAL', 'USDT', 1.000000, 0, 0, NULL, NULL, 1, 1, '', '', @seed_time, NULL),
-('TASK-DEMO-002', '提交任务计划截图', '提交任务证明后由后台审核，审核通过走钱包 TASK_REWARD 入账。', 'TASK_CENTER', 'USDT', 2.500000, 0, 0, NULL, NULL, 2, 1, '', '', @seed_time, NULL),
+('TASK-DEMO-002', '提交任务计划截图', '提交任务证明后由后台审核，审核通过走钱包 TASK_CENTER_REWARD 入账。', 'TASK_CENTER', 'USDT', 2.500000, 0, 0, NULL, NULL, 2, 1, '', '', @seed_time, NULL),
 ('TASK-DEMO-003', '完成平台分享任务', '演示已完成任务，奖励流水已入账。', 'SHARE', 'USDT', 3.000000, 0, 0, NULL, NULL, 3, 1, '', '', @seed_time, NULL),
 ('TASK-DEMO-004', '提交社媒曝光证明', '演示被驳回任务，可重新提交。', 'SHARE', 'USDT', 4.000000, 1, 0, NULL, NULL, 4, 1, '', '', @seed_time, NULL),
-('TASK-DEMO-005', 'VIP 专属任务', '未领取任务，用于可领取 tab 展示。', 'VIP', 'USDT', 5.000000, 2, 0, NULL, NULL, 5, 1, '', '', @seed_time, NULL)
+('TASK-DEMO-005', 'VIP 专属任务', '未领取任务，用于可领取 tab 展示。', 'VIP', 'USDT', 5.000000, 2, 0, NULL, NULL, 5, 1, '', '', @seed_time, NULL),
+('TASK-DEMO-006', '分享平台活动海报', '提交分享链接或截图，审核通过后走分享任务奖励结算。', 'SHARE', 'USDT', 1.600000, 0, 0, NULL, NULL, 6, 1, '', '', @seed_time, NULL),
+('TASK-DEMO-007', '观看产品介绍视频', '提交观看完成截图或链接，审核通过后走视频任务奖励结算。', 'VIDEO', 'USDT', 1.800000, 0, 0, NULL, NULL, 7, 1, '', '', @seed_time, NULL),
+('TASK-DEMO-008', '完成 VA 操作演练', '提交 VA 执行记录，审核通过后走 VA 任务奖励结算。', 'VA', 'USDT', 2.200000, 0, 0, NULL, NULL, 8, 1, '', '', @seed_time, NULL),
+('TASK-DEMO-009', '视频任务提交审核', '演示视频任务已提交状态，用于视频任务审核中 tab。', 'VIDEO', 'USDT', 2.100000, 0, 0, NULL, NULL, 9, 1, '', '', @seed_time, NULL),
+('TASK-DEMO-010', 'VA 任务驳回复核', '演示 VA 任务驳回后可重新提交。', 'VA', 'USDT', 2.300000, 0, 0, NULL, NULL, 10, 1, '', '', @seed_time, NULL)
 ON DUPLICATE KEY UPDATE
     `title` = VALUES(`title`),
     `description` = VALUES(`description`),
@@ -472,6 +478,8 @@ INSERT INTO `mission_user_task`(`user_id`, `task_id`, `task_code`, `task_title`,
 (178288000001, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-002' LIMIT 1), 'TASK-DEMO-002', '提交任务计划截图', 'TASK_CENTER', 'USDT', 2.500000, 'SUBMITTED', '已上传任务计划截图，等待审核。', NULL, NULL, @seed_time, @seed_time, NULL, NULL, @seed_time, NULL, '', ''),
 (178288000001, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-003' LIMIT 1), 'TASK-DEMO-003', '完成平台分享任务', 'SHARE', 'USDT', 3.000000, 'APPROVED', '分享链接已提交。', '审核通过，奖励已入账。', 'FLOW-DEMO-TASK-001', @seed_time, @seed_time, @seed_time, @seed_time, @seed_time, NULL, '', ''),
 (178288000001, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-004' LIMIT 1), 'TASK-DEMO-004', '提交社媒曝光证明', 'SHARE', 'USDT', 4.000000, 'REJECTED', '曝光截图不完整。', '截图不清晰，请重新提交。', NULL, @seed_time, @seed_time, @seed_time, @seed_time, @seed_time, NULL, '', ''),
+(178288000001, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-009' LIMIT 1), 'TASK-DEMO-009', '视频任务提交审核', 'VIDEO', 'USDT', 2.100000, 'SUBMITTED', '已提交视频观看完成截图，等待审核。', NULL, NULL, @seed_time, @seed_time, NULL, NULL, @seed_time, NULL, '', ''),
+(178288000001, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-010' LIMIT 1), 'TASK-DEMO-010', 'VA 任务驳回复核', 'VA', 'USDT', 2.300000, 'REJECTED', 'VA 执行记录缺少时间戳。', '请补充完整执行记录后重新提交。', NULL, @seed_time, @seed_time, @seed_time, @seed_time, @seed_time, NULL, '', ''),
 (178288000003, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-002' LIMIT 1), 'TASK-DEMO-002', '提交任务计划截图', 'TASK_CENTER', 'USDT', 2.500000, 'APPROVED', 'VIP2 任务截图。', '审核通过，奖励已入账。', 'FLOW-DEMO-TASK-003', @seed_time, @seed_time, @seed_time, @seed_time, @seed_time, NULL, '', '')
 ON DUPLICATE KEY UPDATE
     `task_code` = VALUES(`task_code`),
@@ -489,13 +497,15 @@ ON DUPLICATE KEY UPDATE
     `update_time` = @seed_time;
 
 INSERT INTO `mission_reward_settlement`(`user_task_id`, `user_id`, `task_id`, `currency`, `amount`, `biz_type`, `biz_id`, `status`, `wallet_flow_no`, `fail_reason`, `settled_at`, `create_time`, `update_time`, `creator`, `updater`) VALUES
-((SELECT `id` FROM `mission_user_task` WHERE `user_id` = 178288000001 AND `task_code` = 'TASK-DEMO-003' AND `status` = 'APPROVED' LIMIT 1), 178288000001, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-003' LIMIT 1), 'USDT', 3.000000, 'TASK_REWARD', 'MUT-DEMO-APPROVED-001', 'SETTLED', 'FLOW-DEMO-TASK-001', NULL, @seed_time, @seed_time, NULL, '', ''),
-((SELECT `id` FROM `mission_user_task` WHERE `user_id` = 178288000003 AND `task_code` = 'TASK-DEMO-002' AND `status` = 'APPROVED' LIMIT 1), 178288000003, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-002' LIMIT 1), 'USDT', 2.500000, 'TASK_REWARD', 'MUT-DEMO-APPROVED-003', 'SETTLED', 'FLOW-DEMO-TASK-003', NULL, @seed_time, @seed_time, NULL, '', '')
+((SELECT `id` FROM `mission_user_task` WHERE `user_id` = 178288000001 AND `task_code` = 'TASK-DEMO-003' AND `status` = 'APPROVED' LIMIT 1), 178288000001, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-003' LIMIT 1), 'USDT', 3.000000, 'SHARE_TASK_REWARD', 'MUT-DEMO-APPROVED-001', 'SETTLED', 'FLOW-DEMO-TASK-001', NULL, @seed_time, @seed_time, NULL, '', ''),
+((SELECT `id` FROM `mission_user_task` WHERE `user_id` = 178288000003 AND `task_code` = 'TASK-DEMO-002' AND `status` = 'APPROVED' LIMIT 1), 178288000003, (SELECT `id` FROM `mission_task` WHERE `task_code` = 'TASK-DEMO-002' LIMIT 1), 'USDT', 2.500000, 'TASK_CENTER_REWARD', 'MUT-DEMO-APPROVED-003', 'SETTLED', 'FLOW-DEMO-TASK-003', NULL, @seed_time, @seed_time, NULL, '', '')
 ON DUPLICATE KEY UPDATE
     `user_id` = VALUES(`user_id`),
     `task_id` = VALUES(`task_id`),
     `currency` = VALUES(`currency`),
     `amount` = VALUES(`amount`),
+    `biz_type` = VALUES(`biz_type`),
+    `biz_id` = VALUES(`biz_id`),
     `status` = VALUES(`status`),
     `wallet_flow_no` = VALUES(`wallet_flow_no`),
     `fail_reason` = VALUES(`fail_reason`),
@@ -506,6 +516,106 @@ ON DUPLICATE KEY UPDATE
 -- mall-promotion：抽奖配置和用户中奖记录
 -- =============================================================
 USE `mall-promotion`;
+
+CREATE TABLE IF NOT EXISTS `promotion_coupon_template` (
+    `id`               bigint         NOT NULL AUTO_INCREMENT,
+    `coupon_code`      varchar(64)    NOT NULL COMMENT '优惠券编码',
+    `title`            varchar(100)   NOT NULL COMMENT '优惠券标题',
+    `description`      varchar(1000)           DEFAULT NULL COMMENT '说明',
+    `coupon_type`      varchar(32)    NOT NULL DEFAULT 'CASH_OFF' COMMENT 'CASH_OFF/PERCENT 等扩展类型',
+    `currency`         varchar(16)    NOT NULL DEFAULT 'USDT',
+    `discount_amount`  decimal(24, 6) NOT NULL DEFAULT 0.000000 COMMENT '抵扣金额',
+    `min_order_amount` decimal(24, 6) NOT NULL DEFAULT 0.000000 COMMENT '最低使用金额',
+    `total_stock`      int            NOT NULL DEFAULT 0 COMMENT '总库存，0表示不限量',
+    `claimed_stock`    int            NOT NULL DEFAULT 0 COMMENT '已领取库存',
+    `per_user_limit`   int            NOT NULL DEFAULT 1 COMMENT '每人领取上限',
+    `valid_days`       int            NOT NULL DEFAULT 30 COMMENT '领取后有效天数',
+    `start_at`         bigint                  DEFAULT NULL,
+    `end_at`           bigint                  DEFAULT NULL,
+    `sort_order`       int            NOT NULL DEFAULT 0,
+    `status`           tinyint        NOT NULL DEFAULT 1,
+    `creator`          varchar(64)             DEFAULT NULL,
+    `updater`          varchar(64)             DEFAULT NULL,
+    `create_time`      bigint                  DEFAULT NULL,
+    `update_time`      bigint                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_coupon_code` (`coupon_code`),
+    KEY `idx_status_time` (`status`, `start_at`, `end_at`)
+) ENGINE=InnoDB COMMENT='优惠券模板';
+
+CREATE TABLE IF NOT EXISTS `promotion_coupon_record` (
+    `id`               bigint         NOT NULL AUTO_INCREMENT,
+    `record_no`        varchar(96)    NOT NULL COMMENT '领取记录号',
+    `user_id`          bigint         NOT NULL,
+    `template_id`      bigint         NOT NULL,
+    `coupon_code`      varchar(64)    NOT NULL,
+    `title`            varchar(100)   NOT NULL,
+    `coupon_type`      varchar(32)    NOT NULL,
+    `currency`         varchar(16)    NOT NULL DEFAULT 'USDT',
+    `discount_amount`  decimal(24, 6) NOT NULL DEFAULT 0.000000,
+    `min_order_amount` decimal(24, 6) NOT NULL DEFAULT 0.000000,
+    `status`           varchar(32)    NOT NULL COMMENT 'CLAIMED/LOCKED/USED/EXPIRED',
+    `locked_biz_type`  varchar(64)             DEFAULT NULL,
+    `locked_biz_id`    varchar(96)             DEFAULT NULL,
+    `used_biz_type`    varchar(64)             DEFAULT NULL,
+    `used_biz_id`      varchar(96)             DEFAULT NULL,
+    `valid_from`       bigint         NOT NULL,
+    `valid_to`         bigint         NOT NULL,
+    `claimed_at`       bigint         NOT NULL,
+    `locked_at`        bigint                  DEFAULT NULL,
+    `used_at`          bigint                  DEFAULT NULL,
+    `expired_at`       bigint                  DEFAULT NULL,
+    `creator`          varchar(64)             DEFAULT NULL,
+    `updater`          varchar(64)             DEFAULT NULL,
+    `create_time`      bigint                  DEFAULT NULL,
+    `update_time`      bigint                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_record_no` (`record_no`),
+    KEY `idx_user_status` (`user_id`, `status`),
+    KEY `idx_template_user` (`template_id`, `user_id`),
+    KEY `idx_valid_to` (`valid_to`)
+) ENGINE=InnoDB COMMENT='用户优惠券记录';
+
+CREATE TABLE IF NOT EXISTS `promotion_checkin_rule` (
+    `id`                        bigint         NOT NULL AUTO_INCREMENT,
+    `rule_code`                 varchar(64)    NOT NULL,
+    `title`                     varchar(100)   NOT NULL,
+    `required_consecutive_days` int            NOT NULL DEFAULT 1,
+    `currency`                  varchar(16)    NOT NULL DEFAULT 'USDT',
+    `reward_amount`             decimal(24, 6) NOT NULL DEFAULT 0.000000,
+    `sort_order`                int            NOT NULL DEFAULT 0,
+    `status`                    tinyint        NOT NULL DEFAULT 1,
+    `creator`                   varchar(64)             DEFAULT NULL,
+    `updater`                   varchar(64)             DEFAULT NULL,
+    `create_time`               bigint                  DEFAULT NULL,
+    `update_time`               bigint                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_rule_code` (`rule_code`),
+    KEY `idx_status_days` (`status`, `required_consecutive_days`)
+) ENGINE=InnoDB COMMENT='签到奖励规则';
+
+CREATE TABLE IF NOT EXISTS `promotion_checkin_record` (
+    `id`               bigint         NOT NULL AUTO_INCREMENT,
+    `record_no`        varchar(96)    NOT NULL,
+    `user_id`          bigint         NOT NULL,
+    `checkin_date`     int            NOT NULL COMMENT 'yyyyMMdd',
+    `consecutive_days` int            NOT NULL DEFAULT 1,
+    `currency`         varchar(16)    NOT NULL DEFAULT 'USDT',
+    `reward_amount`    decimal(24, 6) NOT NULL DEFAULT 0.000000,
+    `status`           varchar(32)    NOT NULL COMMENT 'SETTLED/SETTLE_FAILED',
+    `wallet_flow_no`   varchar(64)             DEFAULT NULL,
+    `fail_reason`      varchar(500)            DEFAULT NULL,
+    `checked_at`       bigint         NOT NULL,
+    `settled_at`       bigint                  DEFAULT NULL,
+    `creator`          varchar(64)             DEFAULT NULL,
+    `updater`          varchar(64)             DEFAULT NULL,
+    `create_time`      bigint                  DEFAULT NULL,
+    `update_time`      bigint                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_date` (`user_id`, `checkin_date`),
+    UNIQUE KEY `uk_record_no` (`record_no`),
+    KEY `idx_user_date` (`user_id`, `checkin_date`)
+) ENGINE=InnoDB COMMENT='用户签到记录';
 
 INSERT INTO `promotion_prize`(`id`, `prize_code`, `prize_name`, `prize_type`, `currency`, `amount`, `stock_total`, `stock_used`, `sort_order`, `status`, `remark`, `creator`, `updater`, `create_time`, `update_time`) VALUES
 (1, 'LOTTERY_CASH_001', '现金奖励 0.100000 USDT', 'CASH', 'USDT', 0.100000, 0, 0, 1, 1, '现金奖中奖后通过钱包结算 Provider 入账', '', '', @seed_time, NULL),
@@ -559,5 +669,69 @@ ON DUPLICATE KEY UPDATE
     `wallet_flow_no` = VALUES(`wallet_flow_no`),
     `fail_reason` = VALUES(`fail_reason`),
     `drawn_at` = VALUES(`drawn_at`),
+    `settled_at` = VALUES(`settled_at`),
+    `update_time` = @seed_time;
+
+INSERT INTO `promotion_coupon_template`(`id`, `coupon_code`, `title`, `description`, `coupon_type`, `currency`, `discount_amount`, `min_order_amount`, `total_stock`, `claimed_stock`, `per_user_limit`, `valid_days`, `start_at`, `end_at`, `sort_order`, `status`, `creator`, `updater`, `create_time`, `update_time`) VALUES
+(1, 'WELCOME_COUPON_5', '新人抵扣券', '领取后 30 天内有效。当前只承载领取和记录状态，具体订单核销待订单域接入。', 'CASH_OFF', 'USDT', 5.000000, 50.000000, 0, 0, 2, 30, NULL, NULL, 1, 1, '', '', @seed_time, NULL),
+(2, 'VIP_COUPON_10', 'VIP 专属抵扣券', '演示券模板：状态机支持领取、锁定、使用、过期。', 'CASH_OFF', 'USDT', 10.000000, 100.000000, 0, 0, 1, 30, NULL, NULL, 2, 1, '', '', @seed_time, NULL)
+ON DUPLICATE KEY UPDATE
+    `title` = VALUES(`title`),
+    `description` = VALUES(`description`),
+    `discount_amount` = VALUES(`discount_amount`),
+    `min_order_amount` = VALUES(`min_order_amount`),
+    `per_user_limit` = VALUES(`per_user_limit`),
+    `valid_days` = VALUES(`valid_days`),
+    `sort_order` = VALUES(`sort_order`),
+    `status` = VALUES(`status`),
+    `update_time` = @seed_time;
+
+INSERT INTO `promotion_coupon_record`(`record_no`, `user_id`, `template_id`, `coupon_code`, `title`, `coupon_type`, `currency`, `discount_amount`, `min_order_amount`, `status`, `locked_biz_type`, `locked_biz_id`, `used_biz_type`, `used_biz_id`, `valid_from`, `valid_to`, `claimed_at`, `locked_at`, `used_at`, `expired_at`, `creator`, `updater`, `create_time`, `update_time`) VALUES
+('COUPON-DEMO-CLAIMED-001', 178288000001, 1, 'WELCOME_COUPON_5', '新人抵扣券', 'CASH_OFF', 'USDT', 5.000000, 50.000000, 'CLAIMED', NULL, NULL, NULL, NULL, @seed_time, @seed_time + 2592000000, @seed_time, NULL, NULL, NULL, '', '', @seed_time, NULL),
+('COUPON-DEMO-USED-002', 178288000002, 2, 'VIP_COUPON_10', 'VIP 专属抵扣券', 'CASH_OFF', 'USDT', 10.000000, 100.000000, 'USED', NULL, NULL, 'DEMO_ORDER', 'ORDER-DEMO-COUPON-002', @seed_time, @seed_time + 2592000000, @seed_time, NULL, @seed_time, NULL, '', '', @seed_time, NULL),
+('COUPON-DEMO-EXPIRED-003', 178288000003, 1, 'WELCOME_COUPON_5', '新人抵扣券', 'CASH_OFF', 'USDT', 5.000000, 50.000000, 'EXPIRED', NULL, NULL, NULL, NULL, @seed_time - 5184000000, @seed_time - 2592000000, @seed_time - 5184000000, NULL, NULL, @seed_time - 2592000000, '', '', @seed_time, NULL)
+ON DUPLICATE KEY UPDATE
+    `user_id` = VALUES(`user_id`),
+    `template_id` = VALUES(`template_id`),
+    `coupon_code` = VALUES(`coupon_code`),
+    `title` = VALUES(`title`),
+    `coupon_type` = VALUES(`coupon_type`),
+    `currency` = VALUES(`currency`),
+    `discount_amount` = VALUES(`discount_amount`),
+    `min_order_amount` = VALUES(`min_order_amount`),
+    `status` = VALUES(`status`),
+    `valid_from` = VALUES(`valid_from`),
+    `valid_to` = VALUES(`valid_to`),
+    `claimed_at` = VALUES(`claimed_at`),
+    `locked_at` = VALUES(`locked_at`),
+    `used_at` = VALUES(`used_at`),
+    `expired_at` = VALUES(`expired_at`),
+    `update_time` = @seed_time;
+
+INSERT INTO `promotion_checkin_rule`(`id`, `rule_code`, `title`, `required_consecutive_days`, `currency`, `reward_amount`, `sort_order`, `status`, `creator`, `updater`, `create_time`, `update_time`) VALUES
+(1, 'CHECKIN_DAY_1', '每日签到奖励', 1, 'USDT', 0.100000, 1, 1, '', '', @seed_time, NULL),
+(2, 'CHECKIN_DAY_3', '连续 3 天奖励', 3, 'USDT', 0.300000, 3, 1, '', '', @seed_time, NULL),
+(3, 'CHECKIN_DAY_7', '连续 7 天奖励', 7, 'USDT', 1.000000, 7, 1, '', '', @seed_time, NULL)
+ON DUPLICATE KEY UPDATE
+    `title` = VALUES(`title`),
+    `required_consecutive_days` = VALUES(`required_consecutive_days`),
+    `currency` = VALUES(`currency`),
+    `reward_amount` = VALUES(`reward_amount`),
+    `sort_order` = VALUES(`sort_order`),
+    `status` = VALUES(`status`),
+    `update_time` = @seed_time;
+
+INSERT INTO `promotion_checkin_record`(`record_no`, `user_id`, `checkin_date`, `consecutive_days`, `currency`, `reward_amount`, `status`, `wallet_flow_no`, `fail_reason`, `checked_at`, `settled_at`, `creator`, `updater`, `create_time`, `update_time`) VALUES
+('CHECKIN-DEMO-001', 178288000001, 20260701, 1, 'USDT', 0.100000, 'SETTLED', 'FLOW-DEMO-CHECKIN-001', NULL, @seed_time - 172800000, @seed_time - 172800000, '', '', @seed_time, NULL),
+('CHECKIN-DEMO-002', 178288000001, 20260702, 2, 'USDT', 0.100000, 'SETTLED', 'FLOW-DEMO-CHECKIN-002', NULL, @seed_time - 86400000, @seed_time - 86400000, '', '', @seed_time, NULL),
+('CHECKIN-DEMO-003', 178288000002, 20260702, 1, 'USDT', 0.100000, 'SETTLED', 'FLOW-DEMO-CHECKIN-003', NULL, @seed_time - 86400000, @seed_time - 86400000, '', '', @seed_time, NULL)
+ON DUPLICATE KEY UPDATE
+    `consecutive_days` = VALUES(`consecutive_days`),
+    `currency` = VALUES(`currency`),
+    `reward_amount` = VALUES(`reward_amount`),
+    `status` = VALUES(`status`),
+    `wallet_flow_no` = VALUES(`wallet_flow_no`),
+    `fail_reason` = VALUES(`fail_reason`),
+    `checked_at` = VALUES(`checked_at`),
     `settled_at` = VALUES(`settled_at`),
     `update_time` = @seed_time;

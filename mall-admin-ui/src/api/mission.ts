@@ -130,6 +130,7 @@ export function deleteMissionTask(id: number): Promise<ResultInfo<null>> {
 export function missionRecordPage(params: {
   userId?: number;
   taskId?: number;
+  taskType?: string;
   status?: string;
   keyword?: string;
   pageNumber?: number;

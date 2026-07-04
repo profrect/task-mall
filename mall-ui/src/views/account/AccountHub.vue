@@ -35,6 +35,7 @@
       <van-cell title="VIP 升级记录" value="待独立接口" is-link to="/account/vipUplog" />
       <van-cell title="邀请好友" value="邀请码/链接" is-link to="/invite" />
       <van-cell title="收益记录" value="返佣收益" is-link to="/income" />
+      <van-cell title="收益汇总" value="真实流水聚合" is-link to="/profit" />
     </van-cell-group>
 
     <van-cell-group inset class="cell-group" title="资金与安全">

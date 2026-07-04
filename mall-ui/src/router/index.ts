@@ -89,12 +89,31 @@ const routes: RouteRecordRaw[] = [
     redirect: '/tasks',
   },
   {
+    path: '/tasklist',
+    name: 'TaskListAlias',
+    component: () => import('@/views/Tasks.vue'),
+    meta: { title: '任务列表', requiresAuth: true },
+  },
+  {
     path: '/invest',
     redirect: '/investment',
   },
   {
     path: '/investZone',
     redirect: '/investment',
+  },
+  {
+    path: '/investProductDetail',
+    component: () => import('@/views/account/AccountStatus.vue'),
+    meta: {
+      title: '投资产品详情',
+      requiresAuth: true,
+      icon: 'chart-trending-o',
+      description: '参考站投资产品详情入口已接入；本地当前只有投资项目列表，详情和购买/持仓链路待后端补齐。',
+      dataScope: '不伪造项目详情、购买订单、持仓或派息数据。',
+      apiState: '待新增投资项目详情 open API；如涉及资金锁定和收益派发，需要独立投资状态机。',
+      relatedLinks: [{ label: '返回投资专区', path: '/investment', value: '项目列表' }],
+    },
   },
   {
     path: '/invest/note',
@@ -151,6 +170,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '收益', requiresAuth: true },
   },
   {
+    path: '/profit',
+    name: 'Profit',
+    component: () => import('@/views/account/Profit.vue'),
+    meta: { title: '收益汇总', requiresAuth: true },
+  },
+  {
     path: '/vip',
     redirect: '/profile',
   },
@@ -160,28 +185,19 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/coupon',
-    component: () => import('@/views/account/AccountStatus.vue'),
-    meta: {
-      title: '优惠券',
-      requiresAuth: true,
-      icon: 'coupon-o',
-      description: '优惠券入口已接入；本地尚无优惠券列表、领取或核销接口。',
-      dataScope: '不伪造优惠券余额、可用券或使用记录。',
-      apiState: '待新增优惠券域接口。',
-    },
+    name: 'Coupon',
+    component: () => import('@/views/Coupon.vue'),
+    meta: { title: '优惠券', requiresAuth: true },
   },
   {
     path: '/coupon/logs',
-    component: () => import('@/views/account/AccountStatus.vue'),
-    meta: {
-      title: '优惠券记录',
-      requiresAuth: true,
-      icon: 'records-o',
-      description: '优惠券记录入口已接入；记录接口待开放。',
-      dataScope: '不展示模拟领取/使用记录。',
-      apiState: '待新增优惠券记录接口。',
-      relatedLinks: [{ label: '优惠券', path: '/coupon', value: '返回' }],
-    },
+    redirect: '/coupon?tab=records',
+  },
+  {
+    path: '/sign',
+    name: 'CheckIn',
+    component: () => import('@/views/CheckIn.vue'),
+    meta: { title: '签到', requiresAuth: true },
   },
   {
     path: '/findpwd',
@@ -203,17 +219,43 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/help',
     component: () => import('@/views/account/ContentPage.vue'),
-    meta: { title: '帮助中心', requiresAuth: false, icon: 'question-o' },
+    meta: {
+      title: '帮助中心',
+      requiresAuth: false,
+      contentType: 'PLATFORM_PROFILE',
+      icon: 'question-o',
+      dataScope: '当前复用后台平台介绍内容；独立帮助分类待内容类型扩展。',
+      apiState: '/api/open/content/list?type=PLATFORM_PROFILE',
+    },
   },
   {
     path: '/guides',
     component: () => import('@/views/account/ContentPage.vue'),
-    meta: { title: '新手指南', requiresAuth: false, icon: 'guide-o' },
+    meta: {
+      title: '新手指南',
+      requiresAuth: false,
+      contentType: 'PLATFORM_PROFILE',
+      icon: 'guide-o',
+      dataScope: '当前复用后台平台介绍内容；独立指南分类待内容类型扩展。',
+      apiState: '/api/open/content/list?type=PLATFORM_PROFILE',
+    },
+  },
+  {
+    path: '/article',
+    component: () => import('@/views/account/ContentPage.vue'),
+    meta: {
+      title: '文章',
+      requiresAuth: false,
+      icon: 'notes-o',
+      description: '文章入口已接入；文章列表/详情内容类型和 open API 待后端补齐。',
+      dataScope: '不写死文章正文，不伪造发布时间或阅读量。',
+      apiState: '待扩展内容类型 ARTICLE 或等价内容域接口。',
+    },
   },
   {
     path: '/notice',
     component: () => import('@/views/account/ContentPage.vue'),
-    meta: { title: '公告', requiresAuth: false, contentType: 'notice', icon: 'volume-o' },
+    meta: { title: '公告', requiresAuth: false, contentType: 'NOTICE', icon: 'volume-o' },
   },
   {
     path: '/news',
@@ -223,17 +265,71 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/company',
     component: () => import('@/views/account/ContentPage.vue'),
-    meta: { title: '公司介绍', requiresAuth: false, icon: 'shop-o' },
+    meta: {
+      title: '公司介绍',
+      requiresAuth: false,
+      contentType: 'COMPANY_PROFILE',
+      icon: 'shop-o',
+      apiState: '/api/open/content/list?type=COMPANY_PROFILE',
+    },
   },
   {
     path: '/privacyPolicy',
     component: () => import('@/views/account/ContentPage.vue'),
-    meta: { title: '隐私政策', requiresAuth: false, icon: 'shield-o' },
+    meta: {
+      title: '隐私政策',
+      requiresAuth: false,
+      contentType: 'USER_PRIVACY',
+      icon: 'shield-o',
+      apiState: '/api/open/content/list?type=USER_PRIVACY',
+    },
+  },
+  {
+    path: '/termOfUse',
+    component: () => import('@/views/account/ContentPage.vue'),
+    meta: {
+      title: '用户协议',
+      requiresAuth: false,
+      contentType: 'USER_AGREEMENT',
+      icon: 'orders-o',
+      dataScope: '读取后台 USER_AGREEMENT 内容配置，不写死协议正文。',
+      apiState: '/api/open/content/list?type=USER_AGREEMENT',
+    },
   },
   {
     path: '/pfrules',
     component: () => import('@/views/account/ContentPage.vue'),
-    meta: { title: '平台规则', requiresAuth: false, icon: 'description-o' },
+    meta: {
+      title: '平台规则',
+      requiresAuth: false,
+      contentType: 'REGULATOR',
+      icon: 'description-o',
+      apiState: '/api/open/content/list?type=REGULATOR',
+    },
+  },
+  {
+    path: '/whitepapers',
+    component: () => import('@/views/account/ContentPage.vue'),
+    meta: {
+      title: '白皮书',
+      requiresAuth: false,
+      icon: 'description-o',
+      description: '白皮书入口已接入；文件资料表或内容类型待后端补齐。',
+      dataScope: '不伪造白皮书文件、版本或下载地址。',
+      apiState: '待新增文件资料 open API 或扩展内容类型 WHITEPAPER。',
+    },
+  },
+  {
+    path: '/cpfiles',
+    component: () => import('@/views/account/ContentPage.vue'),
+    meta: {
+      title: '文件资料',
+      requiresAuth: false,
+      icon: 'folder-o',
+      description: '文件资料入口已接入；资料列表、下载地址和权限规则待后端补齐。',
+      dataScope: '不伪造资料文件或下载链接。',
+      apiState: '待新增文件资料表和只读 open API。',
+    },
   },
   {
     path: '/service',
@@ -242,8 +338,10 @@ const routes: RouteRecordRaw[] = [
       title: '客服',
       requiresAuth: false,
       icon: 'service-o',
-      description: '客服入口已接入；客服联系方式和 Telegram/在线客服配置接口待开放。',
-      dataScope: '不写死外部联系方式，等待后台配置。',
+      contentMode: 'service',
+      description: '客服入口已接入，只读取后台公开客服配置。',
+      dataScope: '不写死外部联系方式，不暴露机器人 token。',
+      apiState: '/api/open/content/service',
     },
   },
   {
@@ -255,16 +353,53 @@ const routes: RouteRecordRaw[] = [
     redirect: '/lottery',
   },
   {
-    path: '/friendsCircle',
-    component: () => import('@/views/account/AccountStatus.vue'),
+    path: '/shareTask',
+    component: () => import('@/views/Tasks.vue'),
     meta: {
       title: '分享任务',
       requiresAuth: true,
-      icon: 'share-o',
-      description: '分享任务入口已接入；提交/审核链路待 mission 分享任务接口闭环。',
-      dataScope: '不伪造分享素材、提交状态或审核结果。',
-      apiState: '待新增分享任务列表、详情、提交与审核接口。',
-      relatedLinks: [{ label: '任务中心', path: '/tasks', value: '返回' }],
+      taskType: 'SHARE',
+      defaultStatus: 'available',
+    },
+  },
+  {
+    path: '/shareTaskList',
+    component: () => import('@/views/Tasks.vue'),
+    meta: {
+      title: '分享任务记录',
+      requiresAuth: true,
+      taskType: 'SHARE',
+      defaultStatus: 'completed',
+    },
+  },
+  {
+    path: '/friendsCircle',
+    component: () => import('@/views/Tasks.vue'),
+    meta: {
+      title: '分享任务',
+      requiresAuth: true,
+      taskType: 'SHARE',
+      defaultStatus: 'available',
+    },
+  },
+  {
+    path: '/vatask',
+    component: () => import('@/views/Tasks.vue'),
+    meta: {
+      title: 'VA 任务',
+      requiresAuth: true,
+      taskType: 'VA',
+      defaultStatus: 'available',
+    },
+  },
+  {
+    path: '/videoTask',
+    component: () => import('@/views/Tasks.vue'),
+    meta: {
+      title: '视频任务',
+      requiresAuth: true,
+      taskType: 'VIDEO',
+      defaultStatus: 'available',
     },
   },
   {
@@ -289,6 +424,19 @@ const routes: RouteRecordRaw[] = [
       description: '代理职位入口已接入；职位列表、我的职位和领取薪资接口待开放。',
       dataScope: '不伪造职位、薪资或领取状态。',
       apiState: '待新增 agent position 接口。',
+    },
+  },
+  {
+    path: '/union',
+    component: () => import('@/views/account/AccountStatus.vue'),
+    meta: {
+      title: '联盟代理',
+      requiresAuth: true,
+      icon: 'cluster-o',
+      description: '联盟代理入口已接入；代理职位、薪资、领取状态和晋级规则待后端补齐。',
+      dataScope: '不伪造代理等级、薪资或领取记录。',
+      apiState: '待新增 user/agent 域 open API。',
+      relatedLinks: [{ label: '我的团队', path: '/team', value: '已接入' }],
     },
   },
   {
@@ -330,7 +478,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/terms',
-    redirect: '/pfrules',
+    redirect: '/termOfUse',
   },
   {
     path: '/privacy',
@@ -346,7 +494,35 @@ const routes: RouteRecordRaw[] = [
     path: '/leaderboard',
     name: 'Leaderboard',
     component: () => import('@/views/Leaderboard.vue'),
-    meta: { title: 'Leaderboard' },
+    meta: { title: '排行榜' },
+  },
+  {
+    path: '/rank',
+    name: 'Rank',
+    component: () => import('@/views/Leaderboard.vue'),
+    meta: { title: '排行榜' },
+  },
+  {
+    path: '/403',
+    name: 'Forbidden',
+    component: () => import('@/views/ErrorPage.vue'),
+    meta: {
+      title: '无权限访问',
+      statusCode: 403,
+      requiresAuth: false,
+      description: '当前账号没有访问该页面的权限，或参考站入口暂未对本地用户开放。',
+    },
+  },
+  {
+    path: '/:error(.*)',
+    name: 'NotFound',
+    component: () => import('@/views/ErrorPage.vue'),
+    meta: {
+      title: '页面不存在',
+      statusCode: 404,
+      requiresAuth: false,
+      description: '当前访问的页面不存在，或该参考站入口还在后续功能矩阵中。',
+    },
   },
 ]
 

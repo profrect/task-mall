@@ -207,17 +207,18 @@
 | 团队 | `/team`、`/team/:id` | 已有基础页 | 邀请、复制链接、层级 tabs、下级详情、团队充值统计、返佣记录 | `mall-ui/src/views/Team.vue`、`views/account/AccountStatus.vue` | 部分实现：新增直属成员/收益/层级 tabs；一级团队用真实直属成员接口，二级/三级和下级详情进入明确待接口状态 |
 | 我的 | `/mine`、`/account/person` | 已有基础页 | 个人资料、VIP、账户安全、修改密码、退出登录、邀请链接 | `mall-ui/src/views/Profile.vue` | 已实现：`/mine`、`/account/person` 映射个人中心；新增账户/邀请/收益/公告/帮助入口和退出登录；VIP 升级按钮支持模拟登录置灰 |
 | VIP | `/vip`、`/vipDetail`、`/account/vipUplog` | 本地仅 VIP 展示/升级部分 | VIP 页面、VIP 详情、升级记录 | `Profile.vue`、`views/account/AccountStatus.vue` | 部分实现：`/vip`、`/vipDetail` 复用个人中心真实 VIP 配置与升级；`/account/vipUplog` 进入明确状态页，等待独立升级记录接口 |
-| 收益 | `/income` | 团队返佣部分覆盖 | 收益统计、佣金记录、邀请奖励 | `views/account/Income.vue` | 已实现：新增收益页，复用真实团队返佣记录；邀请奖励领取/代理薪资等无接口能力以状态说明保留 |
+| 收益 | `/income`、`/profit` | 已接真实返佣和收益汇总 | 收益统计、佣金记录、真实入账流水聚合 | `views/account/Income.vue`、`views/account/Profit.vue` | 已实现：`/income` 复用真实团队返佣；`/profit` 聚合钱包收益流水、任务统计和返佣记录，不伪造收益、不新增资金写操作 |
 | 邀请 | `/invite` | 团队页部分覆盖 | 邀请海报/链接/复制/规则 | `views/account/Invite.vue` | 已实现：新增邀请页，展示真实邀请码/直属上级/直属成员，生成注册邀请链接并复制 |
-| 优惠券 | `/coupon`、`/coupon/logs` | 缺页面 | 优惠券列表、使用/领取记录 | `views/account/AccountStatus.vue` | 已实现入口：优惠券和记录路由落到明确状态页，不伪造券数据 |
+| 优惠券 | `/coupon`、`/coupon/logs` | 已接真实 promotion 接口 | 优惠券模板、领取记录、状态筛选、模拟登录只读拦截 | `mall-ui/src/views/Coupon.vue`、`src/api/promotion.ts` | 已实现：`promotion_coupon_template`/`promotion_coupon_record` 承载模板和本人券记录；`/coupon/logs` 映射记录 tab；只读 smoke 返回模板 2 条、本人记录 1 条，不伪造券数据 |
 | 抽奖活动 | `/lottery` | 有路由 | 增加主入口、活动列表、中奖记录 tabs | `mall-ui/src/views/Lottery.vue`、`Home.vue` | 已实现：首页新增入口；活动/记录已有真实接口；模拟登录抽奖按钮置灰并保留后端只读拦截 |
+| 签到 | `/sign` | 已接真实 promotion 接口 | 今日状态、连续天数、奖励规则、签到记录、模拟登录只读拦截 | `mall-ui/src/views/CheckIn.vue`、`src/api/promotion.ts` | 已实现：`promotion_checkin_rule`/`promotion_checkin_record` 承载规则和记录；奖励通过 `CHECKIN_REWARD` 调钱包结算，不直接改余额；只读 smoke 返回状态和 2 条演示记录 |
 | 活动 | `/activity`、`/activity/[id]` | 缺完整活动页 | 活动列表/详情/领取 | `router/index.ts` | 已实现入口：当前映射到抽奖活动页，后续参考站校准后再拆独立活动体系 |
-| 排行榜 | `/user/user_rank` 线索 | 有路由 | 增加主入口、排行类型 tabs | `mall-ui/src/views/Leaderboard.vue` | 待实现 |
+| 排行榜 | `/user/user_rank` 线索、`/rank` | 已接真实榜单 | `/rank` 与 `/leaderboard` 共用收益/充值/任务榜 tabs | `mall-ui/src/views/Leaderboard.vue`、`src/api/leaderboard.ts` | 已实现：`/api/open/leaderboard/list?type=EARNING&limit=3` 返回 code=0；前端 `type-check/build-only` 通过 |
 | 登录/注册 | `/login`、`/register` | 已有登录注册 | 找回密码、邀请码带入、协议入口 | `mall-ui/src/views/auth/Login.vue` | 已实现：新增 `/register`，邀请链接自动切注册 tab 并带入邀请码；协议/隐私链接改走本地 hash 路由；找回密码入口接状态页 |
 | 找回/修改密码 | `/findpwd`、`/account/changePwd` | 缺找回，修改密码缺入口 | 找回密码、修改密码页面 | `views/account/AccountStatus.vue` | 已实现入口：找回密码和修改密码进入明确状态页，等待真实密码接口 |
 | 实名/谷歌验证 | `/account/kyc`、`/account/googleAuth` | 缺页面 | 先记录入口，是否实现待校准 | `views/account/AccountStatus.vue` | 已实现入口：实名和 Google 验证进入明确状态页，不伪造认证状态 |
-| 内容页 | `/news`、`/notice`、`/company`、`/privacyPolicy`、`/help`、`/guides`、`/pfrules` | 缺内容页体系 | 公告、新闻、公司、隐私、帮助、规则 | `views/account/ContentPage.vue` | 部分实现：公告使用现有 `/api/open/content/notices`；其它内容路由有明确状态页，等待内容配置接口 |
-| 客服 | `/service` | 缺入口 | 客服入口/联系方式 | `views/account/ContentPage.vue`、`Home.vue` | 已实现入口：不写死客服联系方式，等待后台配置接口 |
+| 内容页 | `/news`、`/notice`、`/company`、`/privacyPolicy`、`/help`、`/guides`、`/pfrules`、`/termOfUse`、`/article`、`/whitepapers`、`/cpfiles` | 已建立内容 DSL | 公告、公司、隐私、协议、规则、帮助、指南与资料入口 | `views/account/ContentPage.vue`、`src/api/content.ts`、`router/index.ts` | 部分实现：`NOTICE/COMPANY_PROFILE/PLATFORM_PROFILE/REGULATOR/USER_AGREEMENT/USER_PRIVACY` 走 `/api/open/content/list` 真实内容；`news/article/whitepapers/cpfiles` 保持明确状态页，等待独立内容/文件域 |
+| 客服 | `/service` | 已接只读配置 | 客服入口/联系方式 | `views/account/ContentPage.vue`、`Home.vue`、`OpenContentController` | 已实现：`/api/open/content/service` 聚合 `admin_system_param` 与启用机器人配置，只返回机器人名称/说明，不暴露 `botToken`，不写死外部联系方式 |
 | 模拟登录只读态 | 后台模拟登录链路 | 已有横幅 | 写操作入口置灰、只读查看优化 | `App.vue`、钱包/任务/VIP/抽奖页面 | 已实现：充值地址分配/复制、提现、转账、任务领取提交、VIP 升级、抽奖均显示只读或置灰并保留统一拦截 |
 
 ## 后端接口闭环矩阵
@@ -232,8 +233,10 @@
 | 电报/机器人 | 配置、自动回复 | 已实现 | `mall-admin` 新增 `/api/admin/bot/**`，只维护配置，不调用 Telegram API | 已实现 |
 | 分享审核 | 审核列表/通过/驳回 | 缺失 | 新增或聚合 mission | 待实现 |
 | 测试账号 | 标记/筛选/管理 | 缺失 | 扩展会员字段或独立表 | 待实现 |
-| 用户端内容 | 协议/隐私/公告 | 公告列表已有开放接口；前端已新增通用内容承载页 | 继续补帮助/规则/隐私/客服配置等内容配置接口 | 部分实现 |
+| 用户端内容 | 协议/隐私/公告/平台规则/客服配置 | 已开放 `/api/open/content/list` 与 `/api/open/content/service`；前端内容 DSL 已接入真实配置 | 后续仅为 `NEWS/ARTICLE/WHITEPAPER/CPFILES` 增加独立内容或文件域 | 部分实现 |
 | 用户端钱包 | 只读充值地址、记录 tabs | 前端已补 `/account/balance/recharge/withDraw/transfer` 映射；记录 tabs 使用 wallet 已有真实接口；模拟登录资金写操作已置灰 | 后续补资金资料、多资产账户等接口 | 部分实现 |
+| 用户端任务子类型 | 分享/朋友圈/视频/VA 任务列表、记录、审核状态、奖励结算 | 已闭环：`mission_task.task_type` 作为唯一子类型 DSL，`mission_user_task` 继续作为唯一用户任务状态机；用户端 `/shareTask`、`/shareTaskList`、`/friendsCircle`、`/vatask`、`/videoTask` 统一落到 `Tasks.vue` 并透传 `taskType`；后台审核页可按任务类型筛选；审核通过奖励按 `SHARE_TASK_REWARD`、`VIDEO_TASK_REWARD`、`VA_TASK_REWARD` 调钱包结算，不直接改余额 | 后续如参考站出现独立证明字段，再在任务提交 DTO 上扩展受控字段，不新增并行状态机 | 已实现 |
+| 用户端促销 | 优惠券模板/领取记录/签到规则/签到记录/签到奖励 | 已闭环：优惠券由 `promotion_coupon_template` 与 `promotion_coupon_record` 承载模板、本人领取、锁定、使用、过期状态；签到由 `promotion_checkin_rule` 与 `promotion_checkin_record` 承载连续天数和奖励事实；签到奖励以 `CHECKIN_REWARD + recordNo` 调钱包结算，幂等键不绕过 `applyLedger` | 后续如接订单核销，只扩展优惠券锁定/核销动作，不在前端伪造可用券或直接扣减余额 | 已实现 |
 
 ## 数据种子矩阵
 
@@ -245,11 +248,13 @@
 | 分组数据 | 支撑分组设置/筛选 | 已应用到本地 MySQL：补建 `user_member_group`、`user_member_group_bind`，写入普通/重点/测试会员分组与演示会员绑定 |
 | 钱包流水 | 支撑流水/余额记录 | 已应用到本地 MySQL：6 个演示钱包、18 条账变流水；校验 `total_balance = avail_balance + frozen_balance` 通过 |
 | 充值/提现/转账订单 | 支撑账单页和用户端记录 | 已应用到本地 MySQL：7 条充值、4 条提现、2 条转账、支付审计订单，覆盖已入账/待确认/审核中/已确认/驳回等状态 |
-| 任务状态数据 | 支撑任务 tabs | 已应用到本地 MySQL：5 个任务配置、5 条用户任务记录，覆盖可领取、进行中、审核中、已完成、已驳回；奖励结算关联校验通过 |
+| 任务状态数据 | 支撑任务 tabs | 已应用到本地 MySQL：基础任务配置与用户任务记录覆盖可领取、进行中、审核中、已完成、已驳回；奖励结算关联校验通过 |
+| 分享/视频/VA 任务子类型数据 | 支撑参考站分享任务、视频任务、VA 任务入口 | 已应用到本地 MySQL：`mission_task` 写入 `SHARE/VIDEO/VA` 子类型任务样例；`mission_user_task` 写入分享已通过/已驳回、视频审核中、VA 已驳回记录；分享任务演示流水与结算业务类型校正为 `SHARE_TASK_REWARD` |
 | 抽奖数据 | 支撑活动/中奖记录 | 已应用到本地 MySQL：抽奖配置和 2 条演示中奖记录，覆盖现金已结算和谢谢参与 |
+| 优惠券/签到数据 | 支撑 `/coupon`、`/coupon/logs`、`/sign` | 已应用到本地 MySQL：优惠券模板 2 条、领取/使用/过期记录样例、签到规则 3 条、签到演示记录 3 条；签到奖励业务类型使用 `CHECKIN_REWARD` 钱包结算口径 |
 | 站内信 | 支撑站内信菜单 | 待实现：当前只有菜单承载页，尚无站内信表和接口，不伪造数据 |
 | 机器人配置 | 支撑机器人页面 | 已应用到本地 MySQL：补建 `admin_bot_config`、`admin_bot_auto_reply`，写入 demo bot 和 2 条自动回复；后端仍只维护配置，不调用 Telegram API |
-| 协议/隐私/公告 | 支撑用户端内容页 | 已应用到本地 MySQL：写入公告、用户协议、隐私政策、公司简介、平台介绍演示内容；帮助/规则仍保持待接口状态页 |
+| 协议/隐私/公告/平台规则/客服 | 支撑用户端内容和客服页 | 已应用到本地 MySQL：写入公告、用户协议、隐私政策、公司简介、平台介绍、平台规则演示内容；客服文案来自 `admin_system_param`，机器人公开信息来自 `admin_bot_config`，不落完整用户端 token |
 
 ### 本地演示数据执行记录
 
@@ -310,7 +315,7 @@
 | 路由/布局 | 通过 | `/home`、`/tasks`、`/investment`、`/lottery`、`/wallet`、`/team`、`/profile`、`/account/*`、`/register` 等入口已存在 |
 | 钱包/任务/团队/我的 | 通过 | 钱包记录 tabs、任务状态 tabs、团队直属成员、个人中心账户入口均使用真实接口或明确状态页，不伪造缺口数据 |
 | 模拟登录只读态 | 通过 | 充值地址分配/复制、提现、转账、任务领取提交、VIP 升级、抽奖等写操作入口已置灰或拦截，提示为 `当前为后台模拟登录，仅可查看，不能操作` |
-| 类型检查 | 阻塞 | `mall-ui` 执行 `npm run type-check` 仍因 `sh: vue-tsc: command not found` 失败，属于本地依赖/可执行文件缺失 |
+| 类型检查 | 通过 | `mall-ui` 已在 Node 22.23.1 下执行 `npm run type-check`，`vue-tsc --build` 通过 |
 
 ### 类型检查与构建验证
 
@@ -320,7 +325,13 @@
 | 后台前端整体类型检查 | 仍失败 | `npm run type:check` 可执行；本轮新增/改造文件错误已消失，剩余 8 个为旧范围：`excelTransfer.vue`、`menuTable.vue`、`ccPopover.vue`、`role-control/index.vue`、`user-log/index.vue` |
 | 后台最近编辑文件诊断 | 通过 | `module-menu.vue`、`bot-config/index.vue` 未发现新诊断 |
 | 后台 5173 运行态红屏 | 已修复 | `/src/App.vue` 等 `.vue` 模块原先被 `vite-plugin-eslint` 拦截，并因 `vue-eslint-parser` 在 Node 16 下触发 `this.elementStack.findLastIndex is not a function` 导致 500；已在 `config/vite.config.dev.ts` 解除开发服务器与 ESLint 的运行前置绑定，校验改为独立执行；`menu-modules.ts` 改为 lint 友好的 `reduce` 遍历；复测 `/`、`/src/App.vue`、会员列表、机器人配置等关键模块均返回 200；`npx eslint config/vite.config.dev.ts src/components/menu/menu-modules.ts` 通过 |
-| 后端目标模块编译 | 通过 | 修复 `UserController.groupList` 参数绑定后，`mvn -pl mall-admin,mall-user,mall-wallet,mall-mission,mall-promotion -am -DskipTests compile` 成功；仅有既有 Lombok/MapStruct warning |
+| 用户端 P0/P1 一致性入口 | 已完成 | `/rank`、`/tasklist`、`/profit`、`/403`、兜底错误页、`/termOfUse`、`/article`、`/whitepapers`、`/cpfiles`、分享/视频/VA/联盟等精确入口均已落到真实页面或明确状态页；矩阵已更新 |
+| 用户端内容/客服真实化 | 已完成 | 新增 `/api/open/content/list` 和 `/api/open/content/service`；`ContentPage.vue` 改为内容 DSL + 客服模式；`/company`、`/pfrules`、`/privacyPolicy`、`/termOfUse` 读取后台真实内容，`/service` 读取只读客服配置且不暴露 `botToken` |
+| 用户端类型检查与构建 | 通过 | `cd /Users/aa/data/java/task-mall/mall-ui && nvm use 22 && npm run type-check` 通过；`npm run build-only` 通过，Vite `v8.1.0` 构建成功 |
+| 后端内容/客服 open 接口编译 | 通过 | `mvn -pl mall-admin -am -DskipTests compile` 通过；仅有既有 Lombok/MapStruct warning |
+| 用户端内容/排行只读 API smoke | 通过 | `/api/open/content/list` 覆盖 `USER_AGREEMENT/USER_PRIVACY/REGULATOR/COMPANY_PROFILE` 均返回 code=0 且有数据；`/api/open/content/service` 返回 code=0 且不包含原始 token；`/api/open/leaderboard/list?type=EARNING&limit=3` 返回 code=0 |
+| 用户端任务子类型 API smoke | 通过 | `mall-mission` 已监听 `10003`；本地 demo 账号登录后仅在进程内使用 token，不输出、不落盘。`SHARE/VIDEO/VA` 的 `/api/open/mission/stats`、`/tasks?status=available`、`/records?status=SUBMITTED/REJECTED/APPROVED` 均返回 code=0；返回记录的 `taskType` 与请求过滤一致 |
+| 用户端优惠券/签到只读 API smoke | 通过 | `mall-wallet` 已监听 `10002`，`mall-promotion` 已监听 `10004`；幂等 seed 已重新执行。本地 demo 账号登录后仅在进程内使用 token，不输出、不落盘。`/api/open/promotion/coupon/templates` 返回 2 条，`/coupon/records` 返回本人记录，`/checkin/state` 和 `/checkin/records` 均返回 code=0 |
 
 ## 当前 Todo 状态
 
@@ -332,6 +343,7 @@
 | 实现后台会员管理菜单和会员列表 VIP tabs | 已完成 | 会员列表已接入全部/VIP0-VIP5 tabs；后台聚合层和 `mall-user` provider 已支持 `vipLevel` 过滤；会员左侧缺失菜单已补种子和承载页，具体按钮接口进入后续会员动作模块 |
 | 实现机器人配置表、接口、菜单与脱敏规则 | 已完成 | 已新增 `admin_bot_config`、`admin_bot_auto_reply`、`/api/admin/bot/**`、后台页面、菜单和 demo 数据；后端目标模块编译通过；本轮已修复 `bot-config/index.vue` 类型错误，后台整体 `npm run type:check` 仍受旧组件错误阻塞 |
 | 补齐后台会员相关按钮和聚合接口 | 已完成 | 已补会员查询区（UID/账号/邀请码/VIP/状态/分组/注册时间）、新增/编辑、详情、导出、分组筛选/批量绑定、查线/改线、行/批量下线、行/批量冻结解冻、补单、下载充值只读导出；补单链路为 `mall-admin` 注入操作人和校验会员、`mall-wallet` 单事务写 MANUAL 充值订单/支付审计/账务流水；运行态修复并复测分组列表参数绑定；模拟登录票据入口可用且只脱敏输出；后端目标模块编译通过；前端最近改动文件无诊断；后续转会员子菜单独立页面能力 |
-| 补齐用户端导航、页面内 tabs、模拟登录只读态和关键按钮 | 已完成 | 已新增 `/account`、`/invite`、`/income`、内容/状态承载页，补齐 `/account/*`、`/register`、`/findpwd`、`/coupon*`、`/help`、`/notice`、`/service`、`/activity*` 等入口；钱包 tabs 收口为账变/充值/提现/转账真实接口；任务 tabs 扩为可领取/进行中/审核中/已完成/已驳回；首页接真实任务/VIP 预览；提现/转账/充值复制/任务/VIP/抽奖模拟登录只读态已置灰或拦截；`ReadLints` 未返回新诊断；`npm run type-check` 因 `sh: vue-tsc: command not found` 无法执行 |
+| 补齐用户端导航、页面内 tabs、模拟登录只读态和关键按钮 | 已完成 | 已新增 `/account`、`/invite`、`/income`、`/profit`、内容/状态承载页，补齐 `/account/*`、`/register`、`/findpwd`、`/coupon*`、`/help`、`/notice`、`/service`、`/activity*`、`/rank`、`/tasklist`、`/403` 等入口；钱包 tabs 收口为账变/充值/提现/转账真实接口；任务 tabs 扩为可领取/进行中/审核中/已完成/已驳回；首页接真实任务/VIP 预览；提现/转账/充值复制/任务/VIP/抽奖模拟登录只读态已置灰或拦截；用户端 `type-check` 和 `build-only` 均通过 |
 | 编写并运行本地 MySQL 幂等演示数据 | 已完成 | 已新增并执行 `/Users/aa/data/java/task-mall/task-mall/local-demo-seed.sql`；补齐本地缺失表 `admin_bot_config/admin_bot_auto_reply/user_member_group/user_member_group_bind`，写入演示会员、钱包、订单、任务、抽奖、内容和机器人数据；重复执行幂等，余额/关联/菜单绑定一致性校验通过 |
-| 按模块做短时浏览器校准和低负载验证 | 已完成 | 低负载校准已覆盖后台会员列表、会员子菜单、账单/钱包、机器人配置、用户端 H5；运行态校准以后台会员模块 API 链路收口。浏览器短会话被中断，未强制重开；如必须做 UI 点击级校准，需要重新授权单页短会话 |
+| 用户端一致性 P0/P1 既有后端页面真实化 | 已完成 | 已完成 `/profit`、`/rank`、内容 DSL、客服 open 配置；后端 `mall-admin` 编译通过，用户端 `type-check/build-only` 通过，只读 API smoke 通过；`mall-mission` 分享/朋友圈/视频/VA 任务子类型已完成前后端闭环和只读 API smoke |
+| 按模块做短时浏览器校准和低负载验证 | 已完成 | 低负载校准已覆盖后台会员列表、会员子菜单、账单/钱包、机器人配置、用户端 H5；运行态校准以 API 链路收口。浏览器短会话被中断，未强制重开；如必须做 UI 点击级校准，需要重新授权单页短会话 |

@@ -29,15 +29,17 @@ public class MissionOpenController {
     private MissionService missionService;
 
     @GetMapping("/stats")
-    public Result<MissionTaskStatsVO> stats() throws BizException {
-        return Result.ok(missionService.userStats(AuthUtils.currentUserId()));
+    public Result<MissionTaskStatsVO> stats(@RequestParam(name = "taskType", required = false) String taskType)
+            throws BizException {
+        return Result.ok(missionService.userStats(AuthUtils.currentUserId(), taskType));
     }
 
     @GetMapping("/tasks")
     public Result<List<MissionTaskVO>> tasks(
             @RequestParam(name = "status", defaultValue = "available") String status,
+            @RequestParam(name = "taskType", required = false) String taskType,
             @RequestParam(name = "limit", required = false) Integer limit) throws BizException {
-        return Result.ok(missionService.userTasks(AuthUtils.currentUserId(), status, limit));
+        return Result.ok(missionService.userTasks(AuthUtils.currentUserId(), status, taskType, limit));
     }
 
     @PostMapping("/tasks/{taskId}/claim")
@@ -55,8 +57,9 @@ public class MissionOpenController {
     @GetMapping("/records")
     public Result<List<MissionUserTaskResp>> records(
             @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "taskType", required = false) String taskType,
             @RequestParam(name = "limit", required = false) Integer limit) throws BizException {
-        return Result.ok(missionService.records(AuthUtils.currentUserId(), status, limit));
+        return Result.ok(missionService.records(AuthUtils.currentUserId(), status, taskType, limit));
     }
 
     @GetMapping("/invest/projects")

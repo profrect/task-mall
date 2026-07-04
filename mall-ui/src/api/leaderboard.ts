@@ -25,5 +25,11 @@ export interface LeaderboardQuery {
 const BASE = '/api/open/leaderboard';
 
 export function getLeaderboard(query: LeaderboardQuery): Promise<LeaderboardItem[]> {
-  return http.get<LeaderboardItem[]>(`${BASE}/list`, query, false);
+  const params: Record<string, string | number | undefined> = {
+    type: query.type,
+    startTime: query.startTime,
+    endTime: query.endTime,
+    limit: query.limit,
+  };
+  return http.get<LeaderboardItem[]>(`${BASE}/list`, params, false);
 }

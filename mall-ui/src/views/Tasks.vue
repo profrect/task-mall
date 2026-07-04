@@ -1,6 +1,6 @@
 <template>
   <div class="tasks-page">
-    <van-nav-bar title="任务" left-arrow fixed placeholder @click-left="$router.back()" />
+    <van-nav-bar :title="pageTitle" left-arrow fixed placeholder @click-left="$router.back()" />
     <div class="task-header">
       <div class="data-item">
         <span class="value">{{ stats.completedCount }}</span>
@@ -18,30 +18,38 @@
 
     <van-tabs v-model:active="activeTab" sticky offset-top="46" shrink>
       <van-tab title="可领取" name="available">
-        <TaskList status="available" @changed="loadStats" />
+        <TaskList status="available" :task-type="taskType" @changed="loadStats" />
       </van-tab>
       <van-tab title="进行中" name="in_progress">
-        <TaskList status="in_progress" @changed="loadStats" />
+        <TaskList status="in_progress" :task-type="taskType" @changed="loadStats" />
       </van-tab>
       <van-tab title="审核中" name="submitted">
-        <TaskList status="submitted" @changed="loadStats" />
+        <TaskList status="submitted" :task-type="taskType" @changed="loadStats" />
       </van-tab>
       <van-tab title="已完成" name="completed">
-        <TaskList status="completed" @changed="loadStats" />
+        <TaskList status="completed" :task-type="taskType" @changed="loadStats" />
       </van-tab>
       <van-tab title="已驳回" name="rejected">
-        <TaskList status="rejected" @changed="loadStats" />
+        <TaskList status="rejected" :task-type="taskType" @changed="loadStats" />
       </van-tab>
     </van-tabs>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import TaskList from '@/components/task/TaskList.vue';
-import { getMissionStats, MissionTaskStats } from '@/api/mission';
+import { getMissionStats } from '@/api/mission';
+import type { MissionTaskStats, MissionTaskTabStatus } from '@/api/mission';
 
-const activeTab = ref('available');
+const route = useRoute();
+const defaultStatus = computed<MissionTaskTabStatus>(() =>
+  (route.meta.defaultStatus as MissionTaskTabStatus | undefined) || 'available'
+);
+const activeTab = ref<MissionTaskTabStatus>(defaultStatus.value);
+const taskType = computed(() => route.meta.taskType as string | undefined);
+const pageTitle = computed(() => (route.meta.title as string) || '任务');
 const stats = ref<MissionTaskStats>({
   completedCount: 0,
   inProgressCount: 0,
@@ -51,8 +59,16 @@ const stats = ref<MissionTaskStats>({
 const moneyText = (value?: number) => Number(value || 0).toFixed(6);
 
 const loadStats = async () => {
-  stats.value = await getMissionStats();
+  stats.value = await getMissionStats(taskType.value);
 };
+
+watch(
+  () => route.fullPath,
+  () => {
+    activeTab.value = defaultStatus.value;
+    loadStats();
+  }
+);
 
 onMounted(loadStats);
 </script>

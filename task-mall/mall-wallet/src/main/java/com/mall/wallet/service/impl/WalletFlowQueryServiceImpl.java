@@ -26,9 +26,11 @@ public class WalletFlowQueryServiceImpl implements WalletFlowQueryService {
     private static final Set<String> EARNING_BIZ_TYPES = Set.of(
             WalletBizType.TASK_REWARD.name(),
             WalletBizType.TASK_CENTER_REWARD.name(),
+            WalletBizType.SHARE_TASK_REWARD.name(),
+            WalletBizType.VIDEO_TASK_REWARD.name(),
+            WalletBizType.VA_TASK_REWARD.name(),
             WalletBizType.INVITE_COMMISSION.name(),
             WalletBizType.CHECKIN_REWARD.name(),
-            WalletBizType.SHARE_TASK_REWARD.name(),
             WalletBizType.LOTTERY_REWARD.name());
 
     @Resource

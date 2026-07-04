@@ -130,7 +130,10 @@ ON DUPLICATE KEY UPDATE `title` = VALUES(`title`),
 
 INSERT INTO `mission_task`(`task_code`, `title`, `description`, `task_type`, `currency`, `reward_amount`, `required_vip_level`, `daily_limit`, `start_at`, `end_at`, `sort_order`, `status`, `creator`, `updater`, `create_time`, `update_time`)
 VALUES ('TASK-DEMO-001', '完成新手资料任务', '领取任务后提交完成说明，后台审核通过后奖励入账。', 'GENERAL', 'USDT', 1.000000, 0, 0, NULL, NULL, 1, 1, '', '', 1782880000000, NULL),
-       ('TASK-DEMO-002', '提交任务计划截图', '提交任务证明后由后台审核，审核通过走钱包 TASK_REWARD 入账。', 'TASK_CENTER', 'USDT', 2.500000, 0, 0, NULL, NULL, 2, 1, '', '', 1782880000000, NULL)
+       ('TASK-DEMO-002', '提交任务计划截图', '提交任务证明后由后台审核，审核通过走钱包 TASK_CENTER_REWARD 入账。', 'TASK_CENTER', 'USDT', 2.500000, 0, 0, NULL, NULL, 2, 1, '', '', 1782880000000, NULL),
+       ('TASK-DEMO-003', '分享平台活动海报', '提交分享链接或截图，审核通过后走分享任务奖励结算。', 'SHARE', 'USDT', 1.600000, 0, 0, NULL, NULL, 3, 1, '', '', 1782880000000, NULL),
+       ('TASK-DEMO-004', '观看产品介绍视频', '提交观看完成截图或链接，审核通过后走视频任务奖励结算。', 'VIDEO', 'USDT', 1.800000, 0, 0, NULL, NULL, 4, 1, '', '', 1782880000000, NULL),
+       ('TASK-DEMO-005', '完成 VA 操作演练', '提交 VA 执行记录，审核通过后走 VA 任务奖励结算。', 'VA', 'USDT', 2.200000, 0, 0, NULL, NULL, 5, 1, '', '', 1782880000000, NULL)
 ON DUPLICATE KEY UPDATE `title` = VALUES(`title`),
                         `description` = VALUES(`description`),
                         `task_type` = VALUES(`task_type`),

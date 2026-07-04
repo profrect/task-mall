@@ -124,3 +124,132 @@ ON DUPLICATE KEY UPDATE
     `daily_limit` = VALUES(`daily_limit`),
     `sort_order` = VALUES(`sort_order`),
     `status` = VALUES(`status`);
+
+-- =============================================================
+-- 优惠券与签到：业务事实留在 promotion，签到奖励通过 wallet settlement 入账
+-- =============================================================
+
+CREATE TABLE IF NOT EXISTS `promotion_coupon_template` (
+    `id`               bigint         NOT NULL AUTO_INCREMENT,
+    `coupon_code`      varchar(64)    NOT NULL COMMENT '优惠券编码',
+    `title`            varchar(100)   NOT NULL COMMENT '优惠券标题',
+    `description`      varchar(1000)           DEFAULT NULL COMMENT '说明',
+    `coupon_type`      varchar(32)    NOT NULL DEFAULT 'CASH_OFF' COMMENT 'CASH_OFF/PERCENT 等扩展类型',
+    `currency`         varchar(16)    NOT NULL DEFAULT 'USDT',
+    `discount_amount`  decimal(24, 6) NOT NULL DEFAULT 0.000000 COMMENT '抵扣金额',
+    `min_order_amount` decimal(24, 6) NOT NULL DEFAULT 0.000000 COMMENT '最低使用金额',
+    `total_stock`      int            NOT NULL DEFAULT 0 COMMENT '总库存，0表示不限量',
+    `claimed_stock`    int            NOT NULL DEFAULT 0 COMMENT '已领取库存',
+    `per_user_limit`   int            NOT NULL DEFAULT 1 COMMENT '每人领取上限',
+    `valid_days`       int            NOT NULL DEFAULT 30 COMMENT '领取后有效天数',
+    `start_at`         bigint                  DEFAULT NULL,
+    `end_at`           bigint                  DEFAULT NULL,
+    `sort_order`       int            NOT NULL DEFAULT 0,
+    `status`           tinyint        NOT NULL DEFAULT 1,
+    `creator`          varchar(64)             DEFAULT NULL,
+    `updater`          varchar(64)             DEFAULT NULL,
+    `create_time`      bigint                  DEFAULT NULL,
+    `update_time`      bigint                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_coupon_code` (`coupon_code`),
+    KEY `idx_status_time` (`status`, `start_at`, `end_at`)
+) ENGINE=InnoDB COMMENT='优惠券模板';
+
+CREATE TABLE IF NOT EXISTS `promotion_coupon_record` (
+    `id`               bigint         NOT NULL AUTO_INCREMENT,
+    `record_no`        varchar(96)    NOT NULL COMMENT '领取记录号',
+    `user_id`          bigint         NOT NULL,
+    `template_id`      bigint         NOT NULL,
+    `coupon_code`      varchar(64)    NOT NULL,
+    `title`            varchar(100)   NOT NULL,
+    `coupon_type`      varchar(32)    NOT NULL,
+    `currency`         varchar(16)    NOT NULL DEFAULT 'USDT',
+    `discount_amount`  decimal(24, 6) NOT NULL DEFAULT 0.000000,
+    `min_order_amount` decimal(24, 6) NOT NULL DEFAULT 0.000000,
+    `status`           varchar(32)    NOT NULL COMMENT 'CLAIMED/LOCKED/USED/EXPIRED',
+    `locked_biz_type`  varchar(64)             DEFAULT NULL,
+    `locked_biz_id`    varchar(96)             DEFAULT NULL,
+    `used_biz_type`    varchar(64)             DEFAULT NULL,
+    `used_biz_id`      varchar(96)             DEFAULT NULL,
+    `valid_from`       bigint         NOT NULL,
+    `valid_to`         bigint         NOT NULL,
+    `claimed_at`       bigint         NOT NULL,
+    `locked_at`        bigint                  DEFAULT NULL,
+    `used_at`          bigint                  DEFAULT NULL,
+    `expired_at`       bigint                  DEFAULT NULL,
+    `creator`          varchar(64)             DEFAULT NULL,
+    `updater`          varchar(64)             DEFAULT NULL,
+    `create_time`      bigint                  DEFAULT NULL,
+    `update_time`      bigint                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_record_no` (`record_no`),
+    KEY `idx_user_status` (`user_id`, `status`),
+    KEY `idx_template_user` (`template_id`, `user_id`),
+    KEY `idx_valid_to` (`valid_to`)
+) ENGINE=InnoDB COMMENT='用户优惠券记录';
+
+CREATE TABLE IF NOT EXISTS `promotion_checkin_rule` (
+    `id`                        bigint         NOT NULL AUTO_INCREMENT,
+    `rule_code`                 varchar(64)    NOT NULL,
+    `title`                     varchar(100)   NOT NULL,
+    `required_consecutive_days` int            NOT NULL DEFAULT 1,
+    `currency`                  varchar(16)    NOT NULL DEFAULT 'USDT',
+    `reward_amount`             decimal(24, 6) NOT NULL DEFAULT 0.000000,
+    `sort_order`                int            NOT NULL DEFAULT 0,
+    `status`                    tinyint        NOT NULL DEFAULT 1,
+    `creator`                   varchar(64)             DEFAULT NULL,
+    `updater`                   varchar(64)             DEFAULT NULL,
+    `create_time`               bigint                  DEFAULT NULL,
+    `update_time`               bigint                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_rule_code` (`rule_code`),
+    KEY `idx_status_days` (`status`, `required_consecutive_days`)
+) ENGINE=InnoDB COMMENT='签到奖励规则';
+
+CREATE TABLE IF NOT EXISTS `promotion_checkin_record` (
+    `id`               bigint         NOT NULL AUTO_INCREMENT,
+    `record_no`        varchar(96)    NOT NULL,
+    `user_id`          bigint         NOT NULL,
+    `checkin_date`     int            NOT NULL COMMENT 'yyyyMMdd',
+    `consecutive_days` int            NOT NULL DEFAULT 1,
+    `currency`         varchar(16)    NOT NULL DEFAULT 'USDT',
+    `reward_amount`    decimal(24, 6) NOT NULL DEFAULT 0.000000,
+    `status`           varchar(32)    NOT NULL COMMENT 'SETTLED/SETTLE_FAILED',
+    `wallet_flow_no`   varchar(64)             DEFAULT NULL,
+    `fail_reason`      varchar(500)            DEFAULT NULL,
+    `checked_at`       bigint         NOT NULL,
+    `settled_at`       bigint                  DEFAULT NULL,
+    `creator`          varchar(64)             DEFAULT NULL,
+    `updater`          varchar(64)             DEFAULT NULL,
+    `create_time`      bigint                  DEFAULT NULL,
+    `update_time`      bigint                  DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_date` (`user_id`, `checkin_date`),
+    UNIQUE KEY `uk_record_no` (`record_no`),
+    KEY `idx_user_date` (`user_id`, `checkin_date`)
+) ENGINE=InnoDB COMMENT='用户签到记录';
+
+INSERT INTO `promotion_coupon_template`(`id`, `coupon_code`, `title`, `description`, `coupon_type`, `currency`, `discount_amount`, `min_order_amount`, `total_stock`, `claimed_stock`, `per_user_limit`, `valid_days`, `start_at`, `end_at`, `sort_order`, `status`, `creator`, `updater`, `create_time`, `update_time`) VALUES
+(1, 'WELCOME_COUPON_5', '新人抵扣券', '领取后 30 天内有效。当前只承载领取和记录状态，具体订单核销待订单域接入。', 'CASH_OFF', 'USDT', 5.000000, 50.000000, 0, 0, 1, 30, NULL, NULL, 1, 1, '', '', 1782890000000, NULL),
+(2, 'VIP_COUPON_10', 'VIP 专属抵扣券', '演示券模板：状态机支持领取、锁定、使用、过期。', 'CASH_OFF', 'USDT', 10.000000, 100.000000, 0, 0, 1, 30, NULL, NULL, 2, 1, '', '', 1782890000000, NULL)
+ON DUPLICATE KEY UPDATE
+    `title` = VALUES(`title`),
+    `description` = VALUES(`description`),
+    `discount_amount` = VALUES(`discount_amount`),
+    `min_order_amount` = VALUES(`min_order_amount`),
+    `per_user_limit` = VALUES(`per_user_limit`),
+    `valid_days` = VALUES(`valid_days`),
+    `sort_order` = VALUES(`sort_order`),
+    `status` = VALUES(`status`);
+
+INSERT INTO `promotion_checkin_rule`(`id`, `rule_code`, `title`, `required_consecutive_days`, `currency`, `reward_amount`, `sort_order`, `status`, `creator`, `updater`, `create_time`, `update_time`) VALUES
+(1, 'CHECKIN_DAY_1', '每日签到奖励', 1, 'USDT', 0.100000, 1, 1, '', '', 1782890000000, NULL),
+(2, 'CHECKIN_DAY_3', '连续 3 天奖励', 3, 'USDT', 0.300000, 3, 1, '', '', 1782890000000, NULL),
+(3, 'CHECKIN_DAY_7', '连续 7 天奖励', 7, 'USDT', 1.000000, 7, 1, '', '', 1782890000000, NULL)
+ON DUPLICATE KEY UPDATE
+    `title` = VALUES(`title`),
+    `required_consecutive_days` = VALUES(`required_consecutive_days`),
+    `currency` = VALUES(`currency`),
+    `reward_amount` = VALUES(`reward_amount`),
+    `sort_order` = VALUES(`sort_order`),
+    `status` = VALUES(`status`);

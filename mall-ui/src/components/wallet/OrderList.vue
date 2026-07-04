@@ -177,9 +177,11 @@ function bizText(bizType: string): string {
     TRANSFER_OUT: '站内转出',
     TASK_REWARD: '任务收益',
     TASK_CENTER_REWARD: '任务中心收益',
+    SHARE_TASK_REWARD: '分享任务奖励',
+    VIDEO_TASK_REWARD: '视频任务奖励',
+    VA_TASK_REWARD: 'VA任务奖励',
     INVITE_COMMISSION: '邀请返佣',
     CHECKIN_REWARD: '签到奖励',
-    SHARE_TASK_REWARD: '分享任务奖励',
     LOTTERY_REWARD: '抽奖奖励',
     VIP_UPGRADE: 'VIP升级扣款',
   }

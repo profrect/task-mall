@@ -27,11 +27,13 @@ public class WalletSettlementServiceImpl implements WalletSettlementService {
     private static final Set<WalletBizType> SETTLEMENT_TYPES = EnumSet.of(
             WalletBizType.TASK_REWARD,
             WalletBizType.TASK_CENTER_REWARD,
+            WalletBizType.SHARE_TASK_REWARD,
+            WalletBizType.VIDEO_TASK_REWARD,
+            WalletBizType.VA_TASK_REWARD,
             WalletBizType.VIP_UPGRADE,
             WalletBizType.INVITE_COMMISSION,
             WalletBizType.LOTTERY_REWARD,
-            WalletBizType.CHECKIN_REWARD,
-            WalletBizType.SHARE_TASK_REWARD);
+            WalletBizType.CHECKIN_REWARD);
 
     @Resource
     private WalletAccountService walletAccountService;

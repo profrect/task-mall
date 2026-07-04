@@ -61,6 +61,7 @@
       <van-cell title="账户中心" icon="user-o" value="资金/安全/内容" is-link to="/account" />
       <van-cell title="邀请好友" icon="friends-o" :value="userInfo.inviteCode || '-'" is-link to="/invite" />
       <van-cell title="收益记录" icon="gold-coin-o" value="返佣明细" is-link to="/income" />
+      <van-cell title="收益汇总" icon="balance-list-o" value="真实流水聚合" is-link to="/profit" />
       <van-cell title="公告" icon="volume-o" value="平台公告" is-link to="/notice" />
       <van-cell title="帮助中心" icon="question-o" value="待内容接口" is-link to="/help" />
     </van-cell-group>

@@ -12,7 +12,7 @@
         :key="benefit"
         plain
         type="primary"
-        size="small"
+        size="medium"
         class="benefit-tag"
       >
         {{ benefit }}

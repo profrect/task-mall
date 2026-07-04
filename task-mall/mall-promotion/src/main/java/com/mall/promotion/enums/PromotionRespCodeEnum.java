@@ -16,6 +16,14 @@ public enum PromotionRespCodeEnum implements RespCode {
     LOTTERY_LIMIT_REACHED(24008, "今日抽奖次数已用完"),
     LOTTERY_RECORD_NOT_FOUND(24009, "抽奖记录不存在：%s"),
     LOTTERY_PRIZE_INVALID(24010, "抽奖奖池配置无效"),
+    COUPON_INVALID(24011, "优惠券配置无效"),
+    COUPON_NOT_FOUND(24012, "优惠券不存在：%s"),
+    COUPON_NOT_AVAILABLE(24013, "优惠券暂不可领取"),
+    COUPON_STOCK_EMPTY(24014, "优惠券库存不足"),
+    COUPON_LIMIT_REACHED(24015, "优惠券领取次数已达上限"),
+    CHECKIN_RULE_NOT_FOUND(24016, "签到奖励规则不存在"),
+    CHECKIN_ALREADY_DONE(24017, "今日已签到"),
+    CHECKIN_RECORD_NOT_FOUND(24018, "签到记录不存在：%s"),
     ;
 
     private final Integer code;

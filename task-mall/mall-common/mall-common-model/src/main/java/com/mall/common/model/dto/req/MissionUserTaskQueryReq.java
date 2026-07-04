@@ -11,6 +11,8 @@ public class MissionUserTaskQueryReq extends BasePageDTO {
 
     private Long taskId;
 
+    private String taskType;
+
     private String status;
 
     private String keyword;

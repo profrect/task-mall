@@ -41,15 +41,15 @@ public interface MissionService {
 
     MissionUserTaskResp reject(MissionTaskReviewReq req) throws BizException;
 
-    MissionTaskStatsVO userStats(Long userId) throws BizException;
+    MissionTaskStatsVO userStats(Long userId, String taskType) throws BizException;
 
-    List<MissionTaskVO> userTasks(Long userId, String status, Integer limit) throws BizException;
+    List<MissionTaskVO> userTasks(Long userId, String status, String taskType, Integer limit) throws BizException;
 
     MissionUserTaskResp claim(Long userId, Long taskId) throws BizException;
 
     MissionUserTaskResp submit(Long userId, MissionSubmitDTO dto) throws BizException;
 
-    List<MissionUserTaskResp> records(Long userId, String status, Integer limit) throws BizException;
+    List<MissionUserTaskResp> records(Long userId, String status, String taskType, Integer limit) throws BizException;
 
     List<MissionInvestProjectVO> investProjects(Integer limit) throws BizException;
 }

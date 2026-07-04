@@ -22,11 +22,13 @@ public enum WalletBizType {
     TRANSFER_OUT(LedgerDirection.OUT, "站内转账转出"),
 
     TASK_REWARD(LedgerDirection.IN, "任务收益入账"),
+    TASK_CENTER_REWARD(LedgerDirection.IN, "任务中心奖励入账"),
+    SHARE_TASK_REWARD(LedgerDirection.IN, "分享任务奖励入账"),
+    VIDEO_TASK_REWARD(LedgerDirection.IN, "视频任务奖励入账"),
+    VA_TASK_REWARD(LedgerDirection.IN, "VA任务奖励入账"),
     INVITE_COMMISSION(LedgerDirection.IN, "邀请返佣入账"),
     CHECKIN_REWARD(LedgerDirection.IN, "签到奖励入账"),
-    SHARE_TASK_REWARD(LedgerDirection.IN, "分享任务奖励入账"),
     LOTTERY_REWARD(LedgerDirection.IN, "抽奖奖励入账"),
-    TASK_CENTER_REWARD(LedgerDirection.IN, "任务中心奖励入账"),
 
     VIP_UPGRADE(LedgerDirection.OUT, "VIP升级扣款"),
     ;

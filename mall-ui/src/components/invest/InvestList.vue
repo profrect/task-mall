@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { MissionInvestProject } from '@/api/mission';
+import type { MissionInvestProject } from '@/api/mission';
 import InvestItem from './InvestItem.vue';
 
 const props = defineProps<{

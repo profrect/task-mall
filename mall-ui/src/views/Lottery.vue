@@ -86,11 +86,13 @@
 import { computed, onMounted, ref } from 'vue';
 import { showDialog, showSuccessToast } from 'vant';
 import {
-  PromotionLotteryDetail,
-  PromotionLotteryRecord,
   drawLottery,
   getLotteryActivities,
   getLotteryRecords,
+} from '@/api/promotion';
+import type {
+  PromotionLotteryDetail,
+  PromotionLotteryRecord,
 } from '@/api/promotion';
 import { isImpersonatedSession, rejectIfImpersonated } from '@/utils/impersonation';
 

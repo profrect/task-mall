@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { MissionInvestProject } from '@/api/mission';
+import type { MissionInvestProject } from '@/api/mission';
 
 const props = defineProps<{
   plan: MissionInvestProject;
